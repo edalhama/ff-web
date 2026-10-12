@@ -1,0 +1,91 @@
+// Estilos propios de ff-web. Lo reutilizable entre apps va a edas-layout, no aquí.
+
+// En la cabecera, la barra de acciones hereda de su versión flotante un `max-width` en
+// porcentaje. Dentro de un contenedor que se ajusta al contenido eso la deja 32px más estrecha
+// que su propio botón y recorta la etiqueta («Nueva com…»).
+edas-action-bar.breadcrumbs-actions .action-bar {
+  max-width: none;
+}
+
+// Panel de datos del panel de gestión: la misma superficie que la tabla de <edas-list>, para
+// las tablas y listas propias (clasificación, partidos de una jornada, ejecuciones).
+.ff-panel {
+  border: 1px solid var(--edas-surface-border-color);
+  border-radius: var(--edas-radius-lg);
+  background: var(--edas-surface-elevated-color);
+  overflow: hidden;
+}
+
+// Con una tabla más ancha que la pantalla, el scroll es del panel: la página nunca se ensancha
+.ff-panel--scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+
+.ff-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 10px 14px;
+    text-align: start;
+    vertical-align: middle;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--edas-surface-border-color);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  th {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--edas-muted-text-color);
+  }
+
+  abbr {
+    text-decoration: none;
+    cursor: help;
+  }
+
+  .end {
+    text-align: end;
+  }
+
+  // Columna que se queda fija al desplazar en horizontal, opaca sobre el fondo de la página
+  .sticky {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background:
+      linear-gradient(var(--row-tint, transparent), var(--row-tint, transparent)),
+      linear-gradient(var(--edas-surface-elevated-color), var(--edas-surface-elevated-color)),
+      var(--edas-bg-color);
+  }
+
+  // Filas que abren algo
+  tbody tr[tabindex] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+      --row-tint: rgba(var(--edas-tone-neutral-rgb), var(--edas-soft-alpha));
+      background: var(--row-tint);
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgb(var(--edas-tone-primary-rgb));
+      outline-offset: -2px;
+    }
+  }
+}

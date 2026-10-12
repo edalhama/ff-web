@@ -1,0 +1,63 @@
+# Sitio fantasyfutbol.es en Apache (aaPanel). Se copia a la raíz del sitio en cada despliegue.
+#
+# Quién atiende cada petición:
+#   /backend/...        → ff-api (Laravel), por el enlace simbólico `backend`
+#   ficheros reales     → Apache, directamente (JS, CSS, imágenes, robots.txt…)
+#   /admin...           → el esqueleto de la app (`index.csr.html`): el panel se pinta en el navegador
+#   todo lo demás       → el servidor de render (Node, en 127.0.0.1:4000), que genera la página
+#                         o la saca de su caché. Ver DEPLOY.md.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Consulta y purga de la caché del servidor de render: solo se usan desde el propio
+  # servidor (ff-api → 127.0.0.1). Desde fuera no existen.
+  RewriteRule ^__ff(/|$) - [R=404,L]
+
+  # La API tiene su propio .htaccess
+  RewriteRule ^backend(/|$) - [L]
+
+  # Ficheros que existen: tal cual
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  # Panel de administración: esqueleto vacío de la app
+  RewriteRule ^admin(/.*)?$ /index.csr.html [L]
+
+  # El resto son páginas públicas: las genera el servidor de render. [P] = proxy inverso
+  # (necesita mod_proxy y mod_proxy_http, activos de serie en aaPanel).
+  RewriteRule ^(.*)$ http://127.0.0.1:4000/$1 [P,L]
+</IfModule>
+
+# Si el servidor de render no responde (reinicio durante un despliegue, proceso caído), en vez
+# de la página de error de Apache se entrega el esqueleto de la app: el navegador pinta la
+# página por su cuenta pidiendo los datos a la API. El código de estado sigue siendo 502/503,
+# así que un buscador lo toma como un fallo temporal y vuelve más tarde.
+ErrorDocument 502 /index.csr.html
+ErrorDocument 503 /index.csr.html
+
+<IfModule mod_headers.c>
+  # Lo que no lleva hash en el nombre cambia en cada despliegue sin cambiar de URL: que el
+  # navegador lo compruebe siempre.
+  <FilesMatch "\.(html|json|webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "^ngsw-worker\.js$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  # El JS y el CSS de la app llevan un hash en el nombre: si cambian, cambian de URL. Se guardan un año.
+  <FilesMatch "^(chunk|main|polyfills|styles|scripts)-[A-Za-z0-9_-]{8}\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Cabeceras de seguridad (también en las páginas que llegan del servidor de render)
+  # Solo HTTPS durante un año (sin includeSubDomains: no se ha revisado cada subdominio)
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set X-Content-Type-Options "nosniff"
+  # Nadie puede meter el sitio en un iframe (clickjacking)
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+</IfModule>

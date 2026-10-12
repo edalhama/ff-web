@@ -1,0 +1,251 @@
+<!doctype html>
+<!-- lang="es": idioma del HTML que genera el prerender (en el build no hay idioma del
+     visitante). Al arrancar, EdasSeoService lo ajusta al idioma activo. -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>fantasyfutbol</title>
+  <base href="/">
+  <!-- Descripción de respaldo: cada página pública la sobrescribe con la suya (EdasSeoService). -->
+  <meta name="description" content="Competiciones, calendarios, clasificaciones, partidos, equipos y jugadores de fútbol, con las puntuaciones de cada jugador en cada partido.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+  <!-- Splash de arranque en frío (#app-splash). Plantilla y explicación completa en
+       projects/edas-ng/docs/splash.html. Va inline para pintarse en el primer frame, antes de
+       que llegue el bundle; AppComponent lo oculta con EdasSplashService.markReady(). -->
+
+  <style>
+    html[data-splash-theme] {
+      background-color: #f5f5f7;
+    }
+
+    html[data-splash-theme="dark"] {
+      background-color: #000000;
+    }
+
+    /* body hereda de <html> el mismo color: una sola fuente de verdad, sin duplicar hex */
+    html[data-splash-theme] body {
+      background-color: inherit;
+    }
+
+    #app-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #000000;
+      transition: opacity 350ms ease;
+    }
+
+    html[data-splash-theme="light"] #app-splash {
+      background-color: #f5f5f7;
+    }
+
+    #app-splash.app-splash--hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .app-splash__stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Halo muy tenue: solo compositor (opacity), sin afectar layout */
+    .app-splash__glow {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      max-width: 70vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 70%);
+      animation: app-splash-breathe 2400ms ease-in-out 650ms infinite alternate;
+      pointer-events: none;
+    }
+
+    html[data-splash-theme="light"] .app-splash__glow {
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0) 70%);
+    }
+
+    .app-splash__logo {
+      position: relative;
+      width: 160px;
+      max-width: 55vw;
+      height: auto;
+      opacity: 0;
+      animation:
+        app-splash-fade-in 600ms ease forwards,
+        app-splash-breathe 2400ms ease-in-out 650ms infinite alternate;
+    }
+
+    html[data-splash-theme="dark"] .app-splash__logo {
+      filter: invert(1);
+    }
+
+    @keyframes app-splash-fade-in {
+      from { opacity: 0; transform: scale(0.94); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes app-splash-breathe {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #app-splash {
+        transition-duration: 1ms;
+      }
+
+      .app-splash__glow {
+        animation: none;
+      }
+
+      .app-splash__logo {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+
+  <script>
+    // Decide el tema ANTES del primer paint y lo aplica a <html> (y, vía CSS,
+    // a <body> y #app-splash). Clave de localStorage duplicada a propósito
+    // de edas-ng (EdasStorageKeys.theme = 'color_theme', ver core/config.ts):
+    // este script corre fuera del bundle de Angular y no puede importar TS.
+    // Si la app la sobrescribe en EdasConfig.storageKeys, actualizar también esta línea.
+    (function () {
+      try {
+        var raw = null;
+        try {
+          raw = window.localStorage.getItem('color_theme');
+        } catch (storageError) {
+          // Modo privado / storage deshabilitado: seguimos con el default.
+          raw = null;
+        }
+        // Oscuro si no hay valor guardado (default = globalConfig.colorTheme)
+        // o si el valor guardado empieza por "dark". La clave guarda el aspecto (light/dark;
+        // la combinación va en otra clave) y, hasta que ThemeService lo convierte al arrancar,
+        // puede traer aún el id compuesto de versiones anteriores (dark-teal…).
+        var isDark = !raw || raw.indexOf('dark') === 0;
+        document.documentElement.setAttribute('data-splash-theme', isDark ? 'dark' : 'light');
+      } catch (e) {
+        // Nunca debe impedir el arranque de la app por un fallo aquí.
+      }
+    })();
+  </script>
+</head>
+<body>
+<div id="app-splash" role="presentation" aria-hidden="true">
+  <div class="app-splash__stage">
+    <div class="app-splash__glow"></div>
+    <img class="app-splash__logo" alt="" src="data:image/png;base64,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">
+  </div>
+</div>
+<app-root></app-root>
+<noscript>Please enable JavaScript to continue using this application.</noscript>
+<script>
+  // Lógica de ocultado del splash. Vive fuera del bundle de Angular a propósito:
+  // debe funcionar aunque el bundle nunca llegue a arrancar (fallo de red,
+  // error de bootstrap, API colgada) gracias al timeout duro de más abajo.
+  (function () {
+    'use strict';
+
+    var splashEl = document.getElementById('app-splash');
+    var htmlEl = document.documentElement;
+
+    var MIN_VISIBLE_MS = 500;   // evita parpadeo cuando todo resuelve muy rápido
+    var HIDE_TRANSITION_MS = 350;
+    var HARD_TIMEOUT_MS = 10000; // red de seguridad: el splash no debe quedar colgado
+
+    var shownAt = Date.now();
+    var hideRequested = false;
+    var hidden = false;
+    var hardTimeoutId = null;
+
+    function revertThemeAttribute() {
+      try {
+        htmlEl.removeAttribute('data-splash-theme');
+      } catch (e) {
+        // no-op
+      }
+    }
+
+    function doHide() {
+      if (hidden) {
+        return;
+      }
+      hidden = true;
+
+      if (hardTimeoutId !== null) {
+        clearTimeout(hardTimeoutId);
+        hardTimeoutId = null;
+      }
+
+      if (!splashEl) {
+        revertThemeAttribute();
+        return;
+      }
+
+      splashEl.classList.add('app-splash--hidden');
+      setTimeout(function () {
+        if (splashEl && splashEl.parentNode) {
+          splashEl.parentNode.removeChild(splashEl);
+        }
+        // El usuario puede haber cambiado de tema mientras la app cargaba:
+        // un color de html/body fijado a fuego quedaría obsoleto, así que
+        // se revierte y el propio CSS de la app toma el relevo.
+        revertThemeAttribute();
+      }, HIDE_TRANSITION_MS);
+    }
+
+    // Idempotente: la primera llamada arma el temporizador (respetando el
+    // mínimo visible); cualquier llamada posterior no hace nada.
+    function hide() {
+      if (hideRequested) {
+        return;
+      }
+      hideRequested = true;
+
+      var elapsed = Date.now() - shownAt;
+      var remaining = MIN_VISIBLE_MS - elapsed;
+      if (remaining > 0) {
+        setTimeout(doHide, remaining);
+      } else {
+        doHide();
+      }
+    }
+
+    var readyCalled = false;
+    function ready() {
+      if (readyCalled) {
+        return;
+      }
+      readyCalled = true;
+      hide();
+    }
+
+    hardTimeoutId = setTimeout(function () {
+      hide();
+    }, HARD_TIMEOUT_MS);
+
+    window.__edasSplash = {
+      ready: ready,
+      hide: hide
+    };
+  })();
+</script>
+</body>
+</html>

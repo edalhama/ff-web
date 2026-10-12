@@ -1,0 +1,469 @@
+// Parte pública (`.site-*`): maquetación de las páginas que ven los visitantes y los
+// buscadores. Todo color sale de los tokens `--edas-*`, así que sigue al tema claro/oscuro.
+//
+// Van aquí, y no en cada componente, porque las comparten todas las páginas públicas y usan
+// los puntos de corte de edas-layout (@sm, @md, @lg).
+
+.site-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-7);
+  padding-bottom: var(--edas-space-7);
+  color: var(--edas-text-color);
+
+  // La cabecera pública es fija. Por debajo de @lg el contenido del shell ya reserva su
+  // altura; en escritorio no (igual que `.edas-landing`).
+  @media (min-width: @lg) {
+    padding-top: var(--edas-header-height);
+  }
+
+  // Con <tui-root> no aplica el reset de encabezados de text.less
+  h1,
+  h2,
+  h3,
+  p,
+  ul,
+  ol,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    padding: 0;
+    list-style: none;
+  }
+
+  // El hueco de la página hija no es un bloque más: sin esto contaría en el `gap`
+  > router-outlet {
+    display: none;
+  }
+}
+
+// Página hija (los elementos de Angular son `inline` de serie) y cualquier pila de bloques
+.site-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-6);
+  min-width: 0;
+}
+
+// ── Cabecera de página ──────────────────────────────────────────────────────────────────────
+
+.site-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-3);
+  padding-top: var(--edas-space-4);
+}
+
+.site-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edas-space-2);
+  font-size: 0.8125rem;
+  color: var(--edas-muted-text-color);
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--edas-text-color);
+      text-decoration: underline;
+    }
+  }
+}
+
+.site-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+
+  @media (min-width: @sm) {
+    font-size: 2.25rem;
+  }
+}
+
+.site-heading {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.site-subheading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--edas-muted-text-color);
+}
+
+.site-meta,
+.site-note {
+  font-size: 0.8125rem;
+  color: var(--edas-muted-text-color);
+}
+
+.site-text {
+  max-width: 70ch;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+// Datos sueltos de una ficha: «País · España»
+.site-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edas-space-2) var(--edas-space-6);
+  font-size: 0.875rem;
+
+  > div {
+    display: flex;
+    gap: var(--edas-space-2);
+  }
+
+  dt {
+    color: var(--edas-muted-text-color);
+  }
+
+  dd {
+    font-weight: 600;
+  }
+}
+
+// ── Navegación dentro de una página ─────────────────────────────────────────────────────────
+
+// Pestañas que son enlaces (cada una, una página)
+.site-tabs {
+  display: flex;
+  gap: var(--edas-space-5);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--edas-surface-border-color);
+  scrollbar-width: none;
+}
+
+.site-tab {
+  padding: 10px 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--edas-muted-text-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--edas-text-color);
+  }
+
+  &--active {
+    color: var(--edas-text-color);
+    border-bottom-color: rgb(var(--edas-tone-primary-rgb));
+  }
+}
+
+.site-pills,
+.site-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edas-space-2);
+}
+
+.site-pill,
+.site-segment,
+.site-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border: 1px solid var(--edas-surface-border-color);
+  border-radius: var(--edas-radius-pill);
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--edas-muted-text-color);
+  text-decoration: none;
+}
+
+.site-pill,
+.site-segment {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--edas-text-color);
+  }
+
+  &--active {
+    border-color: transparent;
+    color: rgb(var(--edas-tone-primary-rgb));
+    background: rgba(var(--edas-tone-primary-rgb), var(--edas-soft-alpha));
+  }
+}
+
+.site-chip {
+  align-self: flex-start;
+  border-color: transparent;
+  background: rgba(var(--edas-tone-neutral-rgb), var(--edas-soft-alpha));
+}
+
+.site-more,
+.site-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(var(--edas-tone-primary-rgb));
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ── Bloques ─────────────────────────────────────────────────────────────────────────────────
+
+.site-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-4);
+  min-width: 0;
+}
+
+.site-block__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--edas-space-4);
+}
+
+// Dos bloques lado a lado cuando hay sitio
+.site-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--edas-space-7);
+
+  @media (min-width: @md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  // Un bloque solo ocupa todo el ancho
+  > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.site-empty {
+  box-sizing: border-box;
+  padding: var(--edas-space-7) var(--edas-space-5);
+  border: 1px dashed var(--edas-surface-border-color);
+  border-radius: var(--edas-radius-lg);
+  text-align: center;
+  color: var(--edas-muted-text-color);
+}
+
+.site-empty__title {
+  font-weight: 700;
+  color: var(--edas-text-color);
+}
+
+// ── Tarjetas-enlace (competiciones, equipos) ────────────────────────────────────────────────
+
+.site-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--edas-space-4);
+
+  &--compact {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: var(--edas-space-3);
+  }
+}
+
+.site-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-2);
+  box-sizing: border-box;
+  height: 100%;
+  padding: var(--edas-space-5);
+  border: 1px solid var(--edas-surface-border-color);
+  border-radius: var(--edas-radius-lg);
+  background: var(--edas-surface-elevated-color);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+
+  .site-cards--compact & {
+    padding: var(--edas-space-4);
+  }
+}
+
+a.site-card:hover {
+  border-color: rgba(var(--edas-tone-primary-rgb), 0.6);
+  transform: translateY(-1px);
+}
+
+.site-card__title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.site-card__meta {
+  font-size: 0.8125rem;
+  color: var(--edas-muted-text-color);
+}
+
+// ── Portada ─────────────────────────────────────────────────────────────────────────────────
+
+.site-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-4);
+  padding-block: var(--edas-space-7) var(--edas-space-4);
+
+  @media (min-width: @md) {
+    padding-block: 56px var(--edas-space-6);
+  }
+}
+
+.site-hero__title {
+  max-width: 18ch;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+
+  @media (min-width: @sm) {
+    font-size: 3.25rem;
+  }
+}
+
+.site-hero__subtitle {
+  max-width: 60ch;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--edas-muted-text-color);
+}
+
+// ── Calendario ──────────────────────────────────────────────────────────────────────────────
+
+// Jornada que se está viendo, con el paso a la anterior y a la siguiente
+.site-round {
+  display: flex;
+  align-items: center;
+  gap: var(--edas-space-3);
+}
+
+.site-round__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.site-round__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--edas-surface-border-color);
+  border-radius: var(--edas-radius-pill);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--edas-text-color);
+  text-decoration: none;
+
+  &:hover {
+    border-color: rgba(var(--edas-tone-primary-rgb), 0.6);
+  }
+
+  &--disabled {
+    opacity: 0.35;
+  }
+}
+
+// Todas las jornadas, cada una un enlace
+.site-rounds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edas-space-3);
+}
+
+.site-rounds__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.site-rounds__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding-inline: 6px;
+  border: 1px solid var(--edas-surface-border-color);
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--edas-text-color);
+  text-decoration: none;
+
+  &:hover {
+    border-color: rgba(var(--edas-tone-primary-rgb), 0.6);
+  }
+
+  // Las que aún no se han jugado, más discretas
+  &--pending {
+    color: var(--edas-muted-text-color);
+  }
+
+  &--active {
+    border-color: transparent;
+    color: rgb(var(--edas-tone-primary-rgb));
+    background: rgba(var(--edas-tone-primary-rgb), var(--edas-soft-alpha));
+  }
+}
+
+// ── Cabecera del sitio: idiomas ─────────────────────────────────────────────────────────────
+
+.site-languages {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--edas-surface-border-color);
+  border-radius: var(--edas-radius-pill);
+}
+
+.site-language {
+  padding: 3px 9px;
+  border-radius: var(--edas-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--edas-muted-text-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--edas-text-color);
+  }
+
+  &--active {
+    color: var(--edas-text-color);
+    background: rgba(var(--edas-tone-neutral-rgb), var(--edas-soft-alpha));
+  }
+}

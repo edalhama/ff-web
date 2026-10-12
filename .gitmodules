@@ -1,0 +1,6 @@
+[submodule "projects/edas-layout"]
+	path = projects/edas-layout
+	url = https://github.com/edalhama/edas-layout
+[submodule "projects/edas-ng"]
+	path = projects/edas-ng
+	url = https://github.com/edalhama/edas-ng
