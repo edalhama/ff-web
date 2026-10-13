@@ -435,6 +435,10 @@
     "layer-ok": "done",
     "layer-failed": "failed",
     "load-error": "The cache could not be queried",
-    "load-error-description": "Please try again in a moment."
+    "load-error-description": "Please try again in a moment.",
+    "data-title": "API data",
+    "data-description": "Public API responses, stored in Redis. Used by the page server and by navigation within the site.",
+    "data-active": "Stored in “{{store}}”. Purged together with the pages, except when purging a single page.",
+    "data-inactive": "Not stored: the cache store (“{{store}}”) does not support tags. With CACHE_STORE=redis it does."
   }
 }

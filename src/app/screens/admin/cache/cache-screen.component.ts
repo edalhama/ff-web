@@ -20,7 +20,8 @@ import {PageCacheApiService} from '../../../shared/services/api/page-cache-api.s
 
 /**
  * Caché de las páginas públicas: qué tiene guardado el servidor que las genera, si Cloudflare
- * está enlazado, y purgar (todo, una página o lo de una competición).
+ * está enlazado, si la API guarda sus respuestas en Redis, y purgar (todo, una página o lo de
+ * una competición).
  *
  * Las páginas se purgan solas cuando cambian sus datos; esta pantalla es para comprobarlo y
  * para forzarlo a mano. Lo que enseña es una foto del momento: «Actualizar» la repite.
@@ -72,6 +73,19 @@ import {PageCacheApiService} from '../../../shared/services/api/page-cache-api.s
           </div>
           <p class="layer-text">{{ 'cache.cloudflare-description' | translate }}</p>
           <p class="layer-note">{{ (cache.cloudflare.configured ? 'cache.cloudflare-linked' : 'cache.cloudflare-not-linked') | translate }}</p>
+        </div>
+
+        <div class="ff-panel layer">
+          <div class="layer-head">
+            <h2 class="layer-title">{{ 'cache.data-title' | translate }}</h2>
+            <edas-badge
+              [appearance]="cache.data.configured ? 'success' : 'neutral'"
+              [label]="cache.data.configured ? 'cache.status-active' : 'cache.status-disabled'"
+              size="s"
+            />
+          </div>
+          <p class="layer-text">{{ 'cache.data-description' | translate }}</p>
+          <p class="layer-note">{{ (cache.data.configured ? 'cache.data-active' : 'cache.data-inactive') | translate: {store: cache.data.store} }}</p>
         </div>
       </div>
 
@@ -187,6 +201,9 @@ import {PageCacheApiService} from '../../../shared/services/api/page-cache-api.s
               }
               @if (purged.cloudflare; as layer) {
                 <span [class.problem]="!layer.ok">Cloudflare: {{ layerResult(layer) }}</span>
+              }
+              @if (purged.data; as layer) {
+                <span [class.problem]="!layer.ok">{{ 'cache.data-title' | translate }}: {{ layerResult(layer) }}</span>
               }
             </p>
           </div>
@@ -374,7 +391,11 @@ export class CacheScreenComponent implements OnInit {
   private readonly competitions = signal<Competition[]>([]);
 
   /** Hay alguna capa a la que pedirle una purga. */
-  protected readonly canPurge = computed(() => !!this.state() && (this.state()!.render.configured || this.state()!.cloudflare.configured));
+  protected readonly canPurge = computed(() => {
+    const state = this.state();
+
+    return !!state && (state.render.configured || state.cloudflare.configured || state.data.configured);
+  });
 
   private readonly matching = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -429,7 +450,7 @@ export class CacheScreenComponent implements OnInit {
         next: ({result, state, message}) => {
           this.apply(state);
 
-          const failed = [result.render, result.cloudflare].some((layer) => layer !== null && !layer.ok);
+          const failed = [result.render, result.cloudflare, result.data].some((layer) => layer !== null && !layer.ok);
           if (failed) {
             this.notifications.warning(message);
           } else {
@@ -548,7 +569,7 @@ export class CacheScreenComponent implements OnInit {
 
     this.actionBar.setActions([
       {id: 'refresh-cache', labelKey: 'cache.refresh', icon: 'refresh-cw', onClick: () => this.load()},
-      ...(state.render.configured || state.cloudflare.configured
+      ...(state.render.configured || state.cloudflare.configured || state.data.configured
         ? [{id: 'purge-cache', labelKey: 'cache.purge-all', icon: 'trash-2', onClick: () => this.confirmPurgeAll()}]
         : []),
     ]);

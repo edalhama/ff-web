@@ -435,6 +435,10 @@
     "layer-ok": "hecho",
     "layer-failed": "ha fallado",
     "load-error": "No se ha podido consultar la caché",
-    "load-error-description": "Vuelve a intentarlo dentro de un momento."
+    "load-error-description": "Vuelve a intentarlo dentro de un momento.",
+    "data-title": "Datos de la API",
+    "data-description": "Las respuestas de la API pública, guardadas en Redis. Las usan el servidor de páginas y la navegación dentro del sitio.",
+    "data-active": "Guardadas en «{{store}}». Se purgan con las páginas, salvo al purgar una sola página.",
+    "data-inactive": "No se guardan: el almacén de caché («{{store}}») no admite etiquetas. Con CACHE_STORE=redis sí."
   }
 }

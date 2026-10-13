@@ -50,6 +50,8 @@ export interface PageCachePurge {
   paths: string[];
   render: PurgeLayerResult;
   cloudflare: PurgeLayerResult;
+  /** Respuestas de la API en Redis. null también al purgar una sola página: no aplica. */
+  data: PurgeLayerResult;
 }
 
 export interface PageCacheState {
@@ -63,6 +65,8 @@ export interface PageCacheState {
     entries: PageCacheEntry[];
   };
   cloudflare: {configured: boolean};
+  /** Respuestas de la API pública guardadas en la caché de Laravel (Redis). */
+  data: {configured: boolean; store: string};
   log: PageCachePurge[];
 }
 
