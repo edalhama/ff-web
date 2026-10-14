@@ -35,8 +35,47 @@ export interface SyncRun {
   user?: {id: number; name: string} | null;
 }
 
+/** Proveedor con sincronización automática y lo que sabe traer. */
+export interface SyncProvider {
+  code: string;
+  name: string;
+  active: boolean;
+  types: SyncDataType[];
+  /** Se pueden buscar sus competiciones para enlazarlas. */
+  searchable: boolean;
+}
+
+/** Con qué competición de un proveedor está enlazada la nuestra. */
+export interface CompetitionLink {
+  provider: {code: string; name: string};
+  external_id: string;
+  /** Lo que se vio en la búsqueda al enlazarla; null si se enlazó por consola. */
+  name: string | null;
+  country: string | null;
+  logo: string | null;
+  linked_at: string | null;
+  last_synced_at: string | null;
+}
+
 /** Estado de la sincronización de una competición. */
 export interface SyncState {
+  providers: SyncProvider[];
+  links: CompetitionLink[];
   sources: SyncSource[];
   runs: SyncRun[];
+}
+
+/** Competición encontrada en un proveedor. */
+export interface ProviderCompetition {
+  external_id: string;
+  name: string;
+  type: string | null;
+  country: string | null;
+  logo: string | null;
+  /** De la más reciente a la más antigua. */
+  seasons: Array<{year: number; start: string | null; end: string | null; current: boolean}>;
+  /** Qué datos da de su temporada más reciente. */
+  coverage: Record<string, boolean>;
+  /** Competición nuestra que ya está enlazada con esta. */
+  linked_to: {id: number; name: string} | null;
 }

@@ -9,6 +9,7 @@ export class AppNavigation extends EdasNavigation {
     {path: '/admin/home', labelKey: ROUTE_TITLE.adminHome, icon: 'house'},
     {path: '/admin/competitions', labelKey: ROUTE_TITLE.competitions, icon: 'trophy'},
     {path: '/admin/teams', labelKey: ROUTE_TITLE.teams, icon: 'shield'},
+    {path: '/admin/links', labelKey: ROUTE_TITLE.links, icon: 'link'},
     {path: '/admin/cache', labelKey: ROUTE_TITLE.cache, icon: 'database-zap'},
   ];
 

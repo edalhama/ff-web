@@ -8,7 +8,9 @@
     "not-found": "Page not found",
     "teams": "Teams",
     "team": "Team",
-    "cache": "Page cache"
+    "cache": "Page cache",
+    "links": "Links",
+    "link": "Link"
   },
   "auth": {
     "login-btn": "Sign in",
@@ -188,6 +190,21 @@
       "semi_final": "Semi-finals",
       "third_place": "Third place",
       "final": "Final"
+    },
+    "player-position": {
+      "goalkeeper": "Goalkeeper",
+      "defender": "Defender",
+      "midfielder": "Midfielder",
+      "forward": "Forward"
+    },
+    "player-status": {
+      "ok": "Available",
+      "injured": "Injured",
+      "suspended": "Suspended",
+      "doubt": "Doubtful",
+      "not_called": "Not called up",
+      "warned": "One booking from a ban",
+      "unknown": "No data"
     }
   },
   "lang": {
@@ -242,7 +259,19 @@
     "field-image": "Badge",
     "field-image-version": "Badge",
     "field-active": "Status",
-    "modified": "Modified"
+    "modified": "Modified",
+    "squad": "Squad",
+    "squad-empty-title": "No squad",
+    "squad-empty": "It is loaded when the squads of its competition are synced.",
+    "squad-season": "Season",
+    "squad-number": "No.",
+    "squad-player": "Player",
+    "squad-position": "Position",
+    "squad-country": "Country",
+    "squad-age": "Age",
+    "squad-status": "Status",
+    "squad-inactive": "Left",
+    "squad-count": "{{count}} players"
   },
   "match": {
     "calendar": "Fixtures",
@@ -307,7 +336,7 @@
     "done": "Sync completed.",
     "partial": "Sync completed with errors in some items.",
     "sources-title": "Data sources",
-    "sources-description": "Where each kind of data comes from",
+    "sources-description": "What is brought from {{provider}}",
     "external-id": "id",
     "never": "Never",
     "source-inactive": "Inactive",
@@ -317,8 +346,13 @@
     "no-runs": "It has not been synced yet.",
     "quota": "Requests to the provider: {{requests}}. Left today: {{remaining}}.",
     "unlinked-title": "No data provider",
-    "unlinked-description": "Link it from the console",
-    "unlinked-help": "Tell it which provider competition it matches. On API-Football, LaLiga is 140."
+    "started": "Sync started. Squads take a few minutes: this screen will update by itself.",
+    "busy": "A sync of this competition is already running.",
+    "background": "Syncing in the background. You can close this window: it will carry on until it finishes.",
+    "failed": "The sync did not complete. See why in the latest runs.",
+    "last-run": "Last:",
+    "source-off": "Off",
+    "no-providers": "There is no provider with automatic sync."
   },
   "site": {
     "language": "Language",
@@ -383,9 +417,22 @@
       "standing": "{{position}} · {{points}} pts",
       "upcoming": "Upcoming fixtures",
       "recent": "Latest results",
-      "about": "About {{team}}"
+      "about": "About {{team}}",
+      "description-squad": "{{team}} in {{competition}}: squad, upcoming fixtures, latest results and league position."
     },
-    "time-zone-local": "Kick-off times in your local time ({{zone}})."
+    "time-zone-local": "Kick-off times in your local time ({{zone}}).",
+    "squad": {
+      "title": "Squad",
+      "age": "{{age}} years old",
+      "number": "Number {{number}}",
+      "position": {
+        "goalkeeper": "Goalkeepers",
+        "defender": "Defenders",
+        "midfielder": "Midfielders",
+        "forward": "Forwards",
+        "unknown": "Others"
+      }
+    }
   },
   "cache": {
     "intro": "Public pages are rendered on the server and kept for a while so they are not rebuilt on every visit. They refresh on their own when their data changes (a sync, an edit in this dashboard); here you can check that and force it.",
@@ -440,5 +487,70 @@
     "data-description": "Public API responses, stored in Redis. Used by the page server and by navigation within the site.",
     "data-active": "Stored in “{{store}}”. Purged together with the pages, except when purging a single page.",
     "data-inactive": "Not stored: the cache store (“{{store}}”) does not support tags. With CACHE_STORE=redis it does."
+  },
+  "link": {
+    "title": "Link with {{provider}}",
+    "change-title": "Change the link with {{provider}}",
+    "search-help": "Search {{provider}} for the competition by name or country («la liga», «spain»), or type its id. Each search uses one request of the daily quota.",
+    "search": "Name, country or id",
+    "search-button": "Search",
+    "no-results": "No results. Try the English name or the country.",
+    "link": "Link",
+    "linked": "Linked",
+    "linked-to": "Already linked with {{name}}",
+    "done": "Linked with {{name}}. You can sync it now.",
+    "change": "Change",
+    "unlink": "Unlink",
+    "unlink-confirm": "It will no longer be synced with this provider and its data sources will be removed. What was already imported (seasons, matches, teams, players) is kept.",
+    "unlink-entity-confirm": "The next sync will not recognise it: if the provider brings it, a new one will be created instead of updating this one.",
+    "unnamed": "Competition {{id}}",
+    "id": "id {{id}}",
+    "seasons": "seasons {{from}}–{{to}}",
+    "type": {
+      "league": "League",
+      "cup": "Cup"
+    },
+    "coverage": {
+      "standings": "Standings",
+      "players": "Players",
+      "lineups": "Line-ups",
+      "events": "Events",
+      "player_statistics": "Player statistics"
+    },
+    "saved": "Link saved.",
+    "removed": "Link removed.",
+    "not-linked": "Not linked",
+    "linked-as": "Linked with id {{id}}",
+    "synced": "Synced on",
+    "external-id": "Provider id",
+    "external-id-hint": "The number the provider uses to identify it.",
+    "external-id-column": "Provider id",
+    "external-name": "Name at the provider",
+    "save": "Save",
+    "manual-help": "Link it if it existed before syncing: the sync will then update it instead of creating another one. The id cannot already be used by another one.",
+    "competition-elsewhere-title": "Competitions are linked from their card",
+    "competition-elsewhere": "In the Sync tab you can search for it in the provider and choose which data to bring.",
+    "open-competition": "Open sync",
+    "intro": "Which id each provider uses for our data. The sync links what matters by itself; what shows as not linked was created by hand or is no longer brought by the provider.",
+    "types": {
+      "competition": "Competitions",
+      "team": "Teams",
+      "player": "Players",
+      "venue": "Stadiums"
+    },
+    "missing": "{{count}} not linked with {{provider}}",
+    "all-linked": "All linked with {{provider}}",
+    "competitions-title": "Competitions",
+    "provider": "Provider",
+    "data": "Data brought",
+    "last-sync": "Last sync",
+    "no-competitions": "There are no competitions yet.",
+    "entities-title": "Teams, players, stadiums and competitions",
+    "entities-help": "Filter by the ones not linked to review them. Open one to link it with its id at the provider.",
+    "filter-type": "Type",
+    "filter-status": "Link",
+    "filter-all": "All",
+    "filter-linked": "Linked",
+    "filter-unlinked": "Not linked"
   }
 }

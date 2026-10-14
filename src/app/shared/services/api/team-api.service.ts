@@ -4,6 +4,7 @@ import {Pagination} from '@edas/ng/components/layout/list/pagination.model';
 import {firstValueFrom, map, Observable, Subject, tap} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 import {ApiResponse} from '../../models/api';
+import {TeamSquad} from '../../models/player';
 import {Team, TeamPayload} from '../../models/team';
 
 /** Equipos del panel (`/admin/teams`). Se consultan y se corrigen; los crea la sincronización. */
@@ -29,6 +30,11 @@ export class TeamApiService {
 
   get(id: number): Observable<Team> {
     return this.http.get<ApiResponse<{team: Team}>>(`${this.endpoint}/${id}`).pipe(map((response) => response.data!.team));
+  }
+
+  /** Plantillas del equipo, una por temporada, de la más reciente a la más antigua. */
+  squads(id: number): Observable<TeamSquad[]> {
+    return this.http.get<ApiResponse<{squads: TeamSquad[]}>>(`${this.endpoint}/${id}/squads`).pipe(map((response) => response.data?.squads ?? []));
   }
 
   /** Edición parcial: solo cambia lo que va en `payload`. */

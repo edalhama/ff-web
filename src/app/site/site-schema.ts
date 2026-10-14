@@ -1,5 +1,5 @@
 import {environment} from '../../environments/environment';
-import {SiteCompetitionSummary, SiteMatch, SiteTeam, SiteVenue} from '../shared/models/site';
+import {SiteCompetitionSummary, SiteMatch, SiteSquadPlayer, SiteTeam, SiteVenue} from '../shared/models/site';
 import {absoluteUrl, competitionPath, SiteLanguage, teamPath} from './site-links';
 
 /**
@@ -81,7 +81,12 @@ export function matchesSchema(lang: SiteLanguage, matches: readonly SiteMatch[],
 }
 
 /** El equipo de una ficha, con las competiciones que juega. */
-export function teamSchema(lang: SiteLanguage, team: SiteTeam, competitions: readonly SiteCompetitionSummary[]): SchemaNode {
+export function teamSchema(
+  lang: SiteLanguage,
+  team: SiteTeam,
+  competitions: readonly SiteCompetitionSummary[],
+  players: readonly SiteSquadPlayer[] = [],
+): SchemaNode {
   const page = url(teamPath(lang, team.slug ?? ''));
 
   return {
@@ -96,6 +101,17 @@ export function teamSchema(lang: SiteLanguage, team: SiteTeam, competitions: rea
     ...(team.country ? {areaServed: {'@type': 'Country', name: team.country.name, identifier: team.country.code}} : {}),
     ...(competitions.length > 0
       ? {memberOf: competitions.map((competition) => ({'@type': 'SportsOrganization', name: competition.name, url: url(competitionPath(lang, competition.slug ?? ''))}))}
+      : {}),
+    // Sin `url`: los jugadores aún no tienen página
+    ...(players.length > 0
+      ? {
+          athlete: players.map((player) => ({
+            '@type': 'Person',
+            name: player.name,
+            ...(player.birth_date ? {birthDate: player.birth_date} : {}),
+            ...(player.country ? {nationality: {'@type': 'Country', name: player.country.name}} : {}),
+          })),
+        }
       : {}),
   };
 }

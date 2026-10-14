@@ -11,5 +11,7 @@ export const ROUTE_TITLE = {
   teams: 'title.teams',
   team: 'title.team',
   cache: 'title.cache',
+  links: 'title.links',
+  link: 'title.link',
   notFound: 'title.not-found',
 } as const;

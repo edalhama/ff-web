@@ -1,4 +1,5 @@
 import {MatchPeriod, MatchStatus} from './match';
+import {PlayerPosition} from './player';
 import {SeasonStatus} from './season';
 import {StandingRow, StandingScope} from './standing';
 import {TeamSummary} from './team';
@@ -144,6 +145,26 @@ export interface SiteTeam extends SiteTeamSummary {
   updated_at: string | null;
 }
 
+/** Jugador de la plantilla de un equipo. */
+export interface SiteSquadPlayer {
+  name: string;
+  full_name: string | null;
+  /** Para cuando exista su página. */
+  slug: string;
+  shirt_number: number | null;
+  position: PlayerPosition | null;
+  /** `AAAA-MM-DD`. */
+  birth_date: string | null;
+  country: SiteCountry | null;
+}
+
+/** Plantilla que se enseña en la ficha del equipo: la de su temporada principal. */
+export interface SiteSquad {
+  competition: SiteCompetitionSummary;
+  season: SiteSeasonSummary;
+  players: SiteSquadPlayer[];
+}
+
 /** Ficha de un equipo. */
 export interface SiteTeamPage {
   team: SiteTeam;
@@ -152,6 +173,8 @@ export interface SiteTeamPage {
     season: SiteSeasonSummary;
     standing: {position: number; played: number; points: number; zone: string | null} | null;
   }>;
+  /** null mientras ninguna de sus temporadas tenga plantilla. */
+  squad: SiteSquad | null;
   matches: {recent: SiteMatch[]; upcoming: SiteMatch[]};
 }
 

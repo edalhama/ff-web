@@ -4,8 +4,8 @@ Frontend de **fantasyfutbol**: Angular 22 (zoneless, componentes standalone, sig
 
 Tiene dos partes:
 
-- **Parte pública** (`/`, `/en`): portada, competiciones (resumen, clasificación, calendario por jornadas, equipos) y fichas de equipo. En español e inglés, cada idioma con sus URLs. Se genera en el servidor para que los buscadores la reciban completa.
-- **Panel de gestión** (`/admin`): competiciones, temporadas con su calendario, clasificación y equipos, la ficha de cada equipo, la sincronización con los proveedores y la caché de las páginas públicas. Se pinta en el navegador.
+- **Parte pública** (`/`, `/en`): portada, competiciones (resumen, clasificación, calendario por jornadas, equipos) y fichas de equipo (con su plantilla). En español e inglés, cada idioma con sus URLs. Se genera en el servidor para que los buscadores la reciban completa.
+- **Panel de gestión** (`/admin`): competiciones, temporadas con su calendario, clasificación y equipos, la ficha y la plantilla de cada equipo, la sincronización y los enlaces con los proveedores y la caché de las páginas públicas. Se pinta en el navegador.
 
 ## Requisitos
 
@@ -73,7 +73,7 @@ Lo reutilizable entre proyectos va a `edas-ng` / `edas-layout`; aquí solo vive 
 | `…/calendario/jornada-12` · `…/fixtures/matchday-12` | Una jornada |
 | `…/equipos` · `…/teams` | Equipos de la temporada |
 | `/{slug}/{temporada}/…` | Lo mismo, de una temporada concreta (`2024-25`) |
-| `/equipos/{slug}` · `/en/teams/{slug}` | Ficha de un equipo |
+| `/equipos/{slug}` · `/en/teams/{slug}` | Ficha de un equipo, con su plantilla por demarcaciones |
 
 | Ruta | Pantalla | Acceso |
 |------|----------|--------|
@@ -81,6 +81,7 @@ Lo reutilizable entre proyectos va a `edas-ng` / `edas-layout`; aquí solo vive 
 | `/admin/home` | Inicio: secciones, cuenta y preferencias | Admin |
 | `/admin/competitions` | Listado de competiciones | Admin |
 | `/admin/teams` | Listado de equipos | Admin |
+| `/admin/links` | Enlaces con los proveedores | Admin |
 | `/admin/cache` | Caché de las páginas públicas | Admin |
 
 `robots.txt` excluye `/admin` y anuncia el sitemap (`/sitemap.xml`, que genera el servidor de páginas).
@@ -115,7 +116,7 @@ Lo que se pide al generar la página en el servidor viaja incrustado en el HTML 
 
 ### SEO
 
-`SiteSeoService` pone en cada página título, descripción, URL canónica, `hreflang` (con `x-default`), Open Graph, Twitter y los datos estructurados de schema.org (`site-schema.ts`): organización, sitio, página, migas y, según la página, la competición (`SportsOrganization`), los partidos (`SportsEvent`) o el equipo (`SportsTeam`). Solo se describe lo que está en la página.
+`SiteSeoService` pone en cada página título, descripción, URL canónica, `hreflang` (con `x-default`), Open Graph, Twitter y los datos estructurados de schema.org (`site-schema.ts`): organización, sitio, página, migas y, según la página, la competición (`SportsOrganization`), los partidos (`SportsEvent`) o el equipo (`SportsTeam`, con sus jugadores en `athlete`). Solo se describe lo que está en la página.
 
 El título y la descripción de una competición o un equipo salen de sus campos «para buscadores» del panel si están rellenos; si no, se componen.
 
@@ -170,14 +171,18 @@ El catálogo está en `core/app-modal-registry.ts`:
 | `competition` | competición | `new` · `edit` · `seasons` · `sync` |
 | `season-new` | competición | `new` |
 | `season` | temporada | `calendar` · `standings` · `teams` · `edit` |
-| `team` | equipo | `edit` |
+| `team` | equipo | `edit` · `squad` |
+| `link` | `tipo-id` (`player-481`) | `edit` |
 
 Qué hay en cada ficha:
 
-- **Competición:** sus datos, sus temporadas y la **sincronización** (de qué proveedor llega cada dato, lanzarla ahora y las últimas ejecuciones con lo que hizo cada una). La sincronización se espera en pantalla; si el proveedor la rechaza, el aviso muestra su mensaje tal cual.
+- **Competición:** sus datos, sus temporadas y la **sincronización** (de qué proveedor llega cada dato, lanzarla ahora y las últimas ejecuciones con lo que hizo cada una). Si el proveedor la rechaza, el aviso muestra su mensaje tal cual.
 - **Temporada:** se abre por el **calendario** (una jornada cada vez, empezando por la que está en curso, con las horas en la zona horaria de quien mira), y tiene la **clasificación** (general, local y visitante, con las zonas marcadas por color) y los **equipos** inscritos. Todo esto es de solo lectura: llega por la sincronización.
 - **Caché de páginas** (`/admin/cache`, no es una ficha sino una pantalla): qué páginas públicas hay guardadas, si Cloudflare está enlazado, las últimas purgas, y purgar todo, una página o lo de una competición.
-- **Equipo:** sus textos y datos. No hay alta ni baja: los equipos los crea la sincronización. Sirve sobre todo para corregir los nombres, que los proveedores dan en inglés y sin tildes.
+- **Equipo:** sus textos y datos. No hay alta ni baja: los equipos los crea la sincronización. Sirve sobre todo para corregir los nombres, que los proveedores dan en inglés y sin tildes. La pestaña **Plantilla** enseña los jugadores de cada temporada en la que está inscrito (dorsal, posición, país, edad y estado), también de solo lectura.
+- **Enlace con el proveedor** (pestaña Sincronización de la competición): buscar la competición en el proveedor y enlazarla, cambiar o quitar el enlace, y un interruptor por cada tipo de dato que se trae.
+- **Enlaces** (`/admin/links`, pantalla): cuánto está enlazado con cada proveedor, las competiciones con su id y sus datos, y el listado de equipos, jugadores, estadios y competiciones (filtrable por los que no están enlazados). Cada uno abre el modal `link` para enlazarlo a mano con su id del proveedor.
+- **Sincronización:** calendario y clasificación se esperan en pantalla; con las plantillas (minutos) la API la lanza en segundo plano y la pestaña consulta el estado cada 5 segundos hasta que termina, también si se abre con una ya en marcha.
 
 Cómo se comportan los formularios:
 

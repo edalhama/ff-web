@@ -7,17 +7,24 @@ import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.co
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {InputComponent} from '@edas/ng/wrapper/components/input/input.component';
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
+import {SwitchComponent} from '@edas/ng/wrapper/components/switch/switch.component';
 import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {NotificationService} from '@edas/ng/wrapper/services/notification.service';
-import {finalize} from 'rxjs';
+import {finalize, Subscription, switchMap, takeWhile, timer} from 'rxjs';
 import {Competition} from '../../shared/models/competition';
-import {SyncRun, SyncState, SyncStatus} from '../../shared/models/sync';
+import {SyncDataType, SyncRun, SyncSource, SyncState, SyncStatus} from '../../shared/models/sync';
 import {CompetitionApiService} from '../../shared/services/api/competition-api.service';
 import {SeasonApiService} from '../../shared/services/api/season-api.service';
 import {SyncApiService} from '../../shared/services/api/sync-api.service';
 import {TeamApiService} from '../../shared/services/api/team-api.service';
+import {CompetitionLinkComponent} from './competition-link.component';
 
 const SECTION_KEY = 'sync';
+
+/** Cada cuánto se consulta el estado mientras hay una sincronización en segundo plano. */
+const POLL_MS = 5000;
+/** Tope de la espera: pasado esto, una ejecución «en curso» se da por colgada. */
+const POLL_LIMIT_MS = 20 * 60 * 1000;
 
 const STATUS_TONE: Record<SyncStatus, 'success' | 'warning' | 'danger' | 'info'> = {
   success: 'success',
@@ -37,41 +44,57 @@ const STATUS_ICON: Record<SyncStatus, string> = {
  * Sincronización de una competición (sección `sync` del modal `competition`): de qué
  * proveedor viene cada dato, lanzarla ahora y ver qué pasó en las últimas ejecuciones.
  *
- * La sincronización se espera en pantalla (una liga entera son unos segundos). Enlazar la
- * competición con un proveedor se hace por consola, con `sync:link`.
+ * Calendario y clasificación se esperan en pantalla (unos segundos). Con las plantillas
+ * (minutos) la API la lanza en segundo plano y esta sección consulta el estado cada pocos
+ * segundos hasta que termina.
+ *
+ * Arriba, el enlace con el proveedor (`app-competition-link`: buscar y enlazar, cambiar,
+ * desenlazar) y un interruptor por cada tipo de dato que el proveedor sabe traer.
  */
 @Component({
   selector: 'app-competition-sync-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppCardComponent, BadgeComponent, InputComponent, LoaderComponent, LocalizedDatePipe, TranslatePipe],
+  imports: [AppCardComponent, BadgeComponent, CompetitionLinkComponent, InputComponent, LoaderComponent, LocalizedDatePipe, SwitchComponent, TranslatePipe],
   template: `
     @if (state(); as sync) {
-      @if (sync.sources.length > 0) {
-        <edas-app-card icon="database" [iconSize]="48" [title]="'sync.sources-title' | translate" [description]="'sync.sources-description' | translate">
+      @if (data(); as competition) {
+        <app-competition-link [competitionId]="competition.id" [state]="sync" [locked]="running() || polling()" (stateChange)="setState($event)"/>
+      }
+
+      @for (link of sync.links; track link.provider.code) {
+        <edas-app-card icon="database" [iconSize]="48" [title]="'sync.sources-title' | translate" [description]="'sync.sources-description' | translate: {provider: link.provider.name}">
           <ul class="sources">
-            @for (source of sync.sources; track source.id) {
+            @for (type of typesOf(sync, link.provider.code); track type) {
+              @let source = sourceOf(sync, link.provider.code, type);
               <li class="source">
-                <span class="source-type">{{ 'enum.sync-type.' + source.data_type | translate }}</span>
-                <span class="source-detail">
-                  {{ source.provider.name }}
-                  @if (source.external_id) {
-                    · {{ 'sync.external-id' | translate }} {{ source.external_id }}
-                  }
-                </span>
+                <span class="source-type">{{ 'enum.sync-type.' + type | translate }}</span>
                 <span class="source-date">
-                  @if (!source.active) {
-                    <edas-badge appearance="neutral" label="sync.source-inactive" size="s"/>
-                  } @else if (source.last_run_at) {
-                    {{ source.last_run_at | localizedDate: 'd MMM y, HH:mm' }}
-                  } @else {
+                  @if (source?.last_run_at; as at) {
+                    {{ 'sync.last-run' | translate }} {{ at | localizedDate: 'd MMM y, HH:mm' }}
+                  } @else if (source?.active) {
                     {{ 'sync.never' | translate }}
+                  } @else {
+                    {{ 'sync.source-off' | translate }}
                   }
                 </span>
+                <edas-switch
+                  [checked]="source?.active ?? false"
+                  [disabled]="running() || polling() || toggling() !== null"
+                  [ariaLabel]="'enum.sync-type.' + type | translate"
+                  [labelTranslate]="false"
+                  (checkedChange)="toggle(link.provider.code, type, $event)"
+                />
               </li>
             }
           </ul>
         </edas-app-card>
+      }
 
+      @if (sync.providers.length === 0) {
+        <edas-app-card icon="unplug" [iconSize]="48" [title]="'sync.unlinked-title' | translate" [description]="'sync.no-providers' | translate"/>
+      }
+
+      @if (sync.sources.length > 0 || sync.runs.length > 0) {
         <edas-input
           class="season-year"
           label="sync.season-year"
@@ -82,10 +105,10 @@ const STATUS_ICON: Record<SyncStatus, string> = {
           (valueChange)="setSeasonYear($event)"
         />
 
-        @if (running()) {
+        @if (running() || polling()) {
           <div class="running" role="status">
             <edas-loader size="s"/>
-            <span>{{ 'sync.running' | translate }}</span>
+            <span>{{ (polling() ? 'sync.background' : 'sync.running') | translate }}</span>
           </div>
         }
 
@@ -133,11 +156,6 @@ const STATUS_ICON: Record<SyncStatus, string> = {
             <p class="runs-empty">{{ 'sync.no-runs' | translate }}</p>
           }
         </div>
-      } @else {
-        <edas-app-card icon="unplug" [iconSize]="48" [title]="'sync.unlinked-title' | translate" [description]="'sync.unlinked-description' | translate">
-          <p class="help">{{ 'sync.unlinked-help' | translate }}</p>
-          <code class="command">sail artisan sync:link {{ slug() }} api-football &lt;id&gt;</code>
-        </edas-app-card>
       }
     } @else {
       <edas-loader/>
@@ -173,7 +191,6 @@ const STATUS_ICON: Record<SyncStatus, string> = {
       font-weight: 600;
     }
 
-    .source-detail,
     .source-date {
       color: var(--edas-muted-text-color);
     }
@@ -259,24 +276,19 @@ const STATUS_ICON: Record<SyncStatus, string> = {
       color: var(--edas-muted-text-color);
     }
 
-    .command {
-      display: block;
-      margin-top: var(--edas-space-3);
-      padding: 10px 12px;
-      border-radius: var(--edas-radius-md);
-      background: rgba(var(--edas-tone-neutral-rgb), 0.16);
-      font-size: 0.8125rem;
-      overflow-wrap: anywhere;
-    }
-
     @media (max-width: 640px) {
       .source {
         grid-template-columns: minmax(0, 1fr) auto;
       }
 
-      .source-detail {
-        grid-column: 1 / -1;
+      .source-date {
+        grid-column: 1;
         grid-row: 2;
+      }
+
+      .source edas-switch {
+        grid-row: 1 / span 2;
+        grid-column: 2;
       }
 
       .run-meta {
@@ -301,6 +313,11 @@ export class CompetitionSyncSectionComponent implements OnInit {
   /** `null` mientras llega la primera carga. */
   protected readonly state = signal<SyncState | null>(null);
   protected readonly running = signal(false);
+  /** Hay una sincronización en segundo plano y se está siguiendo. */
+  protected readonly polling = signal(false);
+  /** Tipo de dato que se está activando o desactivando. */
+  protected readonly toggling = signal<SyncDataType | null>(null);
+  private poll: Subscription | null = null;
   /** Año de inicio de la temporada a sincronizar, como está en el campo; vacío = la actual del proveedor. */
   protected readonly seasonYear = signal('');
 
@@ -317,8 +334,15 @@ export class CompetitionSyncSectionComponent implements OnInit {
       .state(competition.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (state) => this.setState(state),
-        error: () => this.setState({sources: [], runs: []}),
+        next: (state) => {
+          this.setState(state);
+
+          // Se abre la pantalla con una ya en marcha (lanzada antes, o desde otra pestaña)
+          if (this.hasRunning(state)) {
+            this.follow(competition.id, false);
+          }
+        },
+        error: () => this.setState({providers: [], links: [], sources: [], runs: []}),
       });
 
     this.actionBar.register(SECTION_KEY, [
@@ -326,18 +350,42 @@ export class CompetitionSyncSectionComponent implements OnInit {
         id: 'sync',
         labelKey: 'sync.run',
         icon: 'refresh-cw',
-        disabled: () => this.running() || !this.canRun(),
+        disabled: () => this.running() || this.polling() || !this.canRun(),
         onClick: () => this.run(),
       },
     ]);
     this.destroyRef.onDestroy(() => this.actionBar.unregister(SECTION_KEY));
   }
 
-  /** Slug de la competición, para el comando de ejemplo. */
-  protected slug(): string {
-    const translations = this.data()?.translations ?? {};
+  /** Tipos que sabe traer un proveedor. */
+  protected typesOf(state: SyncState, provider: string): SyncDataType[] {
+    return state.providers.find((each) => each.code === provider)?.types ?? [];
+  }
 
-    return Object.values(translations)[0]?.slug ?? String(this.data()?.id ?? '');
+  protected sourceOf(state: SyncState, provider: string, type: SyncDataType): SyncSource | null {
+    return state.sources.find((source) => source.provider.code === provider && source.data_type === type) ?? null;
+  }
+
+  /** Activa o desactiva un tipo de dato. */
+  protected toggle(provider: string, type: SyncDataType, active: boolean): void {
+    const competition = this.data();
+    if (!competition || this.toggling()) {
+      return;
+    }
+
+    this.toggling.set(type);
+
+    this.syncApi
+      .setSource(competition.id, provider, type, active)
+      .pipe(
+        finalize(() => this.toggling.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (state) => this.setState(state),
+        // El interceptor da el aviso; se vuelve a pintar como estaba
+        error: () => this.state.update((state) => (state ? {...state} : state)),
+      });
   }
 
   protected setSeasonYear(value: string): void {
@@ -357,12 +405,12 @@ export class CompetitionSyncSectionComponent implements OnInit {
   private canRun(): boolean {
     const year = this.seasonYear().trim();
 
-    return (this.state()?.sources.length ?? 0) > 0 && (year === '' || /^(18|19|20|21)\d{2}$/.test(year));
+    return (this.state()?.sources.some((source) => source.active) ?? false) && (year === '' || /^(18|19|20|21)\d{2}$/.test(year));
   }
 
   private run(): void {
     const competition = this.data();
-    if (!competition || this.running() || !this.canRun()) {
+    if (!competition || this.running() || this.polling() || !this.canRun()) {
       return;
     }
 
@@ -377,8 +425,16 @@ export class CompetitionSyncSectionComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (state) => {
+        next: ({state, background}) => {
           this.setState(state);
+
+          if (background) {
+            this.notifications.infoKey('sync.started');
+            this.follow(competition.id, true);
+
+            return;
+          }
+
           this.notifications.successKey(state.runs.some((run) => run.status === 'partial') ? 'sync.partial' : 'sync.done');
           this.announce(competition.id);
         },
@@ -393,6 +449,55 @@ export class CompetitionSyncSectionComponent implements OnInit {
       });
   }
 
+  /**
+   * Consulta el estado cada pocos segundos hasta que no quede ninguna ejecución en curso.
+   * `notify`: al terminar, avisa de cómo ha ido (la ha lanzado esta pantalla).
+   */
+  private follow(competitionId: number, notify: boolean): void {
+    this.poll?.unsubscribe();
+    this.setPolling(true);
+
+    const startedAt = Date.now();
+    // Cuántas ejecuciones había antes: las nuevas son las de esta sincronización
+    const before = new Set((this.state()?.runs ?? []).map((run) => run.id));
+
+    this.poll = timer(POLL_MS, POLL_MS)
+      .pipe(
+        switchMap(() => this.syncApi.state(competitionId)),
+        takeWhile((state) => {
+          this.setState(state);
+
+          return this.hasRunning(state) && Date.now() - startedAt < POLL_LIMIT_MS;
+        }, true),
+        finalize(() => this.setPolling(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        complete: () => {
+          const fresh = (this.state()?.runs ?? []).filter((run) => !before.has(run.id));
+
+          if (notify && fresh.length > 0) {
+            if (fresh.some((run) => run.status === 'failed')) {
+              this.notifications.errorKey('sync.failed');
+            } else {
+              this.notifications.successKey(fresh.some((run) => run.status === 'partial') ? 'sync.partial' : 'sync.done');
+            }
+          }
+
+          this.announce(competitionId);
+        },
+      });
+  }
+
+  private hasRunning(state: SyncState): boolean {
+    return state.runs.some((run) => run.status === 'running');
+  }
+
+  private setPolling(polling: boolean): void {
+    this.polling.set(polling);
+    this.actionBar.refresh();
+  }
+
   /** Lo sincronizado cambia lo que muestran otras listas ya montadas. */
   private announce(competitionId: number): void {
     this.seasonApi.changed$.next(competitionId);
@@ -400,7 +505,7 @@ export class CompetitionSyncSectionComponent implements OnInit {
     this.teamApi.refreshList$.next();
   }
 
-  private setState(state: SyncState): void {
+  protected setState(state: SyncState): void {
     this.state.set(state);
     this.actionBar.refresh();
   }

@@ -7,11 +7,15 @@ import {SeasonListSectionComponent} from '../components/season/season-list-secti
 import {SeasonStandingsSectionComponent} from '../components/season/season-standings-section.component';
 import {SeasonTeamsSectionComponent} from '../components/season/season-teams-section.component';
 import {CompetitionSyncSectionComponent} from '../components/sync/competition-sync-section.component';
+import {LinkFormSectionComponent} from '../components/link/link-form-section.component';
 import {TeamFormSectionComponent} from '../components/team/team-form-section.component';
+import {TeamSquadSectionComponent} from '../components/team/team-squad-section.component';
 import {Competition} from '../shared/models/competition';
 import {Season} from '../shared/models/season';
 import {Team} from '../shared/models/team';
+import {LinkableType, LinkEntity} from '../shared/models/link';
 import {CompetitionApiService} from '../shared/services/api/competition-api.service';
+import {LinkApiService} from '../shared/services/api/link-api.service';
 import {SeasonApiService} from '../shared/services/api/season-api.service';
 import {TeamApiService} from '../shared/services/api/team-api.service';
 import {SessionService} from '../shared/services/session.service';
@@ -26,7 +30,8 @@ import {SessionService} from '../shared/services/session.service';
  * | `competition`| competición | `new` · `edit` · `seasons` · `sync`          |
  * | `season-new` | competición | `new`                                        |
  * | `season`     | temporada   | `calendar` · `standings` · `teams` · `edit`  |
- * | `team`       | equipo      | `edit`                                       |
+ * | `team`       | equipo      | `edit` · `squad`                             |
+ * | `link`       | `tipo-id`   | `edit` (enlace con los proveedores)          |
  *
  * El alta de temporada es un modal propio porque su `id` es el de la competición a la que se
  * añade, no el de una temporada.
@@ -37,6 +42,7 @@ export class AppModalRegistry extends ModalStackRegistry {
   private readonly competitionApi = inject(CompetitionApiService);
   private readonly seasonApi = inject(SeasonApiService);
   private readonly teamApi = inject(TeamApiService);
+  private readonly linkApi = inject(LinkApiService);
 
   /** Con la sesión aún sin resolver no se descarta un modal que venga en la URL. */
   override isSessionPending(): boolean {
@@ -133,6 +139,26 @@ export class AppModalRegistry extends ModalStackRegistry {
         },
         sections: [
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: TeamFormSectionComponent, requiresId: true},
+          {key: 'squad', labelI18nKey: 'team.squad', icon: 'users', component: TeamSquadSectionComponent, requiresId: true},
+        ],
+      },
+      link: {
+        modalKey: 'link',
+        titleI18nKey: 'title.link',
+        icon: 'link',
+        entityCrumb: {label: 'link'},
+        canAccess: (entry) => isAdmin() && entry.id != null,
+        entity: {
+          // `team-12`: el tipo y el id de la entidad
+          load: (id: string) => {
+            const [type, entityId] = id.split('-');
+
+            return this.linkApi.get(type as LinkableType, Number(entityId));
+          },
+          label: (entity: LinkEntity) => entity.name,
+        },
+        sections: [
+          {key: 'edit', labelI18nKey: 'title.link', icon: 'link', component: LinkFormSectionComponent, requiresId: true},
         ],
       },
     };

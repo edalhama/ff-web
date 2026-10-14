@@ -18,7 +18,7 @@ export const edasConfig: EdasConfig = {
   themeVariants: ['default', 'teal', 'purple', 'ocean', 'emerald', 'amber', 'sunset', 'coral', 'rose', 'graphite'],
   defaultThemeMode: 'dark',
   defaultThemeVariant: 'emerald',
-  i18nNamespaces: ['auth', 'nav', 'title', 'common', 'alert', 'landing', 'admin', 'competition', 'season', 'team', 'texts', 'match', 'standing', 'sync', 'cache', 'site', 'enum', 'lang', 'server'],
+  i18nNamespaces: ['auth', 'nav', 'title', 'common', 'alert', 'landing', 'admin', 'competition', 'season', 'team', 'texts', 'match', 'standing', 'sync', 'link', 'cache', 'site', 'enum', 'lang', 'server'],
   brand: {
     // Marca provisional (monocroma, por eso se invierte en oscuro). Sustituir los ficheros.
     logo: 'assets/images/brand/logo.webp',

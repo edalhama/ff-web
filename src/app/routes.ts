@@ -42,6 +42,11 @@ export const routes: Routes = [
         data: { titleKey: ROUTE_TITLE.cache, icon: 'database-zap' },
       },
       {
+        path: 'links',
+        loadComponent: () => import('./screens/admin/links/links-screen.component').then((m) => m.LinksScreenComponent),
+        data: { titleKey: ROUTE_TITLE.links, icon: 'link' },
+      },
+      {
         path: 'teams',
         loadComponent: () => import('./screens/admin/teams/teams-screen.component').then((m) => m.TeamsScreenComponent),
         data: { titleKey: ROUTE_TITLE.teams, icon: 'shield' },

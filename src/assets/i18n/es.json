@@ -8,7 +8,9 @@
     "not-found": "Página no encontrada",
     "teams": "Equipos",
     "team": "Equipo",
-    "cache": "Caché de páginas"
+    "cache": "Caché de páginas",
+    "links": "Enlaces",
+    "link": "Enlace"
   },
   "auth": {
     "login-btn": "Acceder",
@@ -188,6 +190,21 @@
       "semi_final": "Semifinales",
       "third_place": "Tercer y cuarto puesto",
       "final": "Final"
+    },
+    "player-position": {
+      "goalkeeper": "Portero",
+      "defender": "Defensa",
+      "midfielder": "Centrocampista",
+      "forward": "Delantero"
+    },
+    "player-status": {
+      "ok": "Disponible",
+      "injured": "Lesionado",
+      "suspended": "Sancionado",
+      "doubt": "Duda",
+      "not_called": "No convocado",
+      "warned": "Apercibido",
+      "unknown": "Sin datos"
     }
   },
   "lang": {
@@ -242,7 +259,19 @@
     "field-image": "Escudo",
     "field-image-version": "Escudo",
     "field-active": "Estado",
-    "modified": "Modificado"
+    "modified": "Modificado",
+    "squad": "Plantilla",
+    "squad-empty-title": "Sin plantilla",
+    "squad-empty": "Se carga al sincronizar las plantillas de su competición.",
+    "squad-season": "Temporada",
+    "squad-number": "Dorsal",
+    "squad-player": "Jugador",
+    "squad-position": "Posición",
+    "squad-country": "País",
+    "squad-age": "Edad",
+    "squad-status": "Estado",
+    "squad-inactive": "Ya no está",
+    "squad-count": "{{count}} jugadores"
   },
   "match": {
     "calendar": "Calendario",
@@ -307,7 +336,7 @@
     "done": "Sincronización completada.",
     "partial": "Sincronización completada con errores en algunos elementos.",
     "sources-title": "Fuentes de datos",
-    "sources-description": "De dónde llega cada dato",
+    "sources-description": "Qué se trae de {{provider}}",
     "external-id": "id",
     "never": "Nunca",
     "source-inactive": "Inactiva",
@@ -317,8 +346,13 @@
     "no-runs": "Aún no se ha sincronizado.",
     "quota": "Peticiones al proveedor: {{requests}}. Quedan hoy: {{remaining}}.",
     "unlinked-title": "Sin proveedor de datos",
-    "unlinked-description": "Enlázala por consola",
-    "unlinked-help": "Indica a qué competición del proveedor corresponde. En API-Football, LaLiga es la 140."
+    "started": "Sincronización en marcha. Las plantillas tardan unos minutos: esta pantalla se actualizará sola.",
+    "busy": "Ya hay una sincronización de esta competición en marcha.",
+    "background": "Sincronizando en segundo plano. Puedes cerrar esta ventana: seguirá hasta terminar.",
+    "failed": "La sincronización no se ha completado. Mira el motivo en las últimas ejecuciones.",
+    "last-run": "Última:",
+    "source-off": "Desactivado",
+    "no-providers": "No hay ningún proveedor con sincronización automática."
   },
   "site": {
     "language": "Idioma",
@@ -383,9 +417,22 @@
       "standing": "{{position}}.º · {{points}} pts",
       "upcoming": "Próximos partidos",
       "recent": "Últimos resultados",
-      "about": "Sobre {{team}}"
+      "about": "Sobre {{team}}",
+      "description-squad": "{{team}} en {{competition}}: plantilla, próximos partidos, últimos resultados y puesto en la clasificación."
     },
-    "time-zone-local": "Horarios en tu hora local ({{zone}})."
+    "time-zone-local": "Horarios en tu hora local ({{zone}}).",
+    "squad": {
+      "title": "Plantilla",
+      "age": "{{age}} años",
+      "number": "Dorsal {{number}}",
+      "position": {
+        "goalkeeper": "Porteros",
+        "defender": "Defensas",
+        "midfielder": "Centrocampistas",
+        "forward": "Delanteros",
+        "unknown": "Otros"
+      }
+    }
   },
   "cache": {
     "intro": "Las páginas públicas se generan en el servidor y se guardan un tiempo para no rehacerlas en cada visita. Se renuevan solas cuando cambian sus datos (una sincronización, una edición en este panel); aquí puedes comprobarlo y forzarlo.",
@@ -440,5 +487,70 @@
     "data-description": "Las respuestas de la API pública, guardadas en Redis. Las usan el servidor de páginas y la navegación dentro del sitio.",
     "data-active": "Guardadas en «{{store}}». Se purgan con las páginas, salvo al purgar una sola página.",
     "data-inactive": "No se guardan: el almacén de caché («{{store}}») no admite etiquetas. Con CACHE_STORE=redis sí."
+  },
+  "link": {
+    "title": "Enlazar con {{provider}}",
+    "change-title": "Cambiar el enlace con {{provider}}",
+    "search-help": "Busca la competición en {{provider}} por su nombre o su país, en inglés («la liga», «spain»), o escribe su id. Cada búsqueda gasta una petición del cupo diario.",
+    "search": "Nombre, país o id",
+    "search-button": "Buscar",
+    "no-results": "No hay resultados. Prueba con el nombre en inglés o con el país.",
+    "link": "Enlazar",
+    "linked": "Enlazada",
+    "linked-to": "Ya enlazada con {{name}}",
+    "done": "Enlazada con {{name}}. Ya puedes sincronizarla.",
+    "change": "Cambiar",
+    "unlink": "Desenlazar",
+    "unlink-confirm": "Dejará de sincronizarse con este proveedor y se quitarán sus fuentes de datos. Lo ya importado (temporadas, partidos, equipos, jugadores) no se borra.",
+    "unlink-entity-confirm": "La próxima sincronización no lo reconocerá: si el proveedor lo trae, creará otro nuevo en vez de actualizar este.",
+    "unnamed": "Competición {{id}}",
+    "id": "id {{id}}",
+    "seasons": "temporadas {{from}}–{{to}}",
+    "type": {
+      "league": "Liga",
+      "cup": "Copa"
+    },
+    "coverage": {
+      "standings": "Clasificación",
+      "players": "Jugadores",
+      "lineups": "Alineaciones",
+      "events": "Eventos",
+      "player_statistics": "Estadísticas de jugadores"
+    },
+    "saved": "Enlace guardado.",
+    "removed": "Enlace quitado.",
+    "not-linked": "Sin enlazar",
+    "linked-as": "Enlazado con el id {{id}}",
+    "synced": "Sincronizado el",
+    "external-id": "Id en el proveedor",
+    "external-id-hint": "El número que usa el proveedor para identificarlo.",
+    "external-id-column": "Id en el proveedor",
+    "external-name": "Nombre en el proveedor",
+    "save": "Guardar",
+    "manual-help": "Enlázalo si ya existía antes de sincronizar: así la sincronización lo actualizará en vez de crear otro. El id no puede estar ya usado por otro.",
+    "competition-elsewhere-title": "Las competiciones se enlazan desde su ficha",
+    "competition-elsewhere": "En la pestaña Sincronización puedes buscarla en el proveedor y elegir qué datos se traen.",
+    "open-competition": "Abrir la sincronización",
+    "intro": "Con qué id conoce cada proveedor a lo nuestro. La sincronización enlaza sola lo que importa; lo que sale sin enlazar es lo creado a mano o lo que el proveedor dejó de traer.",
+    "types": {
+      "competition": "Competiciones",
+      "team": "Equipos",
+      "player": "Jugadores",
+      "venue": "Estadios"
+    },
+    "missing": "{{count}} sin enlazar con {{provider}}",
+    "all-linked": "Todo enlazado con {{provider}}",
+    "competitions-title": "Competiciones",
+    "provider": "Proveedor",
+    "data": "Datos que se traen",
+    "last-sync": "Última sincronización",
+    "no-competitions": "Todavía no hay competiciones.",
+    "entities-title": "Equipos, jugadores, estadios y competiciones",
+    "entities-help": "Filtra por los que están sin enlazar para revisarlos. Al abrir uno puedes enlazarlo con su id en el proveedor.",
+    "filter-type": "Tipo",
+    "filter-status": "Enlace",
+    "filter-all": "Todos",
+    "filter-linked": "Enlazados",
+    "filter-unlinked": "Sin enlazar"
   }
 }

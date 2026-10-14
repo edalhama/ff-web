@@ -6,6 +6,7 @@ import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {map} from 'rxjs';
 import {MatchListComponent} from '../../../components/match/match-list.component';
 import {SiteErrorComponent} from '../../../components/site/site-error.component';
+import {SiteSquadComponent} from '../../../components/site/site-squad.component';
 import {SiteTimeZoneNoteComponent} from '../../../components/site/site-time-zone-note.component';
 import {SiteTeam, SiteTeamPage} from '../../../shared/models/site';
 import {TeamSummary} from '../../../shared/models/team';
@@ -17,13 +18,13 @@ import {SiteAlternates, SiteSeoService} from '../../../site/site-seo.service';
 import {SiteNotFoundScreenComponent} from '../not-found/site-not-found-screen.component';
 
 /**
- * Ficha de un equipo: sus datos, las competiciones que juega con su puesto en cada una, y sus
- * próximos partidos y últimos resultados.
+ * Ficha de un equipo: sus datos, las competiciones que juega con su puesto en cada una, sus
+ * próximos partidos y últimos resultados, y su plantilla.
  */
 @Component({
   selector: 'app-site-team-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatchListComponent, RouterLink, SiteErrorComponent, SiteTimeZoneNoteComponent, SiteNotFoundScreenComponent, TranslatePipe],
+  imports: [MatchListComponent, RouterLink, SiteErrorComponent, SiteSquadComponent, SiteTimeZoneNoteComponent, SiteNotFoundScreenComponent, TranslatePipe],
   template: `
     @if (page(); as current) {
       <div class="site-page">
@@ -93,6 +94,16 @@ import {SiteNotFoundScreenComponent} from '../not-found/site-not-found-screen.co
           <app-site-time-zone-note/>
         }
 
+        @if (current.squad; as squad) {
+          <div class="site-block">
+            <div class="site-block__header">
+              <h2 class="site-heading">{{ 'site.squad.title' | translate }}</h2>
+              <span class="site-meta">{{ squad.competition.name }} · {{ 'site.season' | translate: {season: squad.season.label} }}</span>
+            </div>
+            <app-site-squad [players]="squad.players"/>
+          </div>
+        }
+
         @if (current.team.content; as content) {
           <div class="site-block">
             <h2 class="site-heading">{{ 'site.team.about' | translate: {team: current.team.name} }}</h2>
@@ -151,7 +162,7 @@ export class SiteTeamScreenComponent {
         titleParams: {team: team.name, text: team.seo_title},
         description:
           team.seo_description ??
-          this.translate.instant(main ? 'site.team.description-competition' : 'site.team.description', {
+          this.translate.instant(main ? (current.squad ? 'site.team.description-squad' : 'site.team.description-competition') : 'site.team.description', {
             team: team.name,
             competition: [main?.competition.name, main?.season.label].filter(Boolean).join(' '),
           }),
@@ -160,7 +171,7 @@ export class SiteTeamScreenComponent {
           ...(main ? [{name: main.competition.name ?? '', path: this.competitionLink(main.competition.slug, 'overview')}] : []),
           {name: team.name ?? '', path: teamPath(this.lang, team.slug ?? '')},
         ],
-        schema: [teamSchema(this.lang, team, current.competitions.map((each) => each.competition))],
+        schema: [teamSchema(this.lang, team, current.competitions.map((each) => each.competition), current.squad?.players ?? [])],
       });
     });
 
