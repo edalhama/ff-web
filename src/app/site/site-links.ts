@@ -9,6 +9,7 @@
  *   /laliga/calendario/jornada-12
  *   /laliga/2024-25/equipos          (una temporada concreta)
  *   /equipos/sevilla                 ·  /en/teams/sevilla
+ *   /profile                         (ajustes del visitante; una sola URL)
  *
  * La competición no lleva ninguna palabra delante: su slug es el primer tramo de la URL. Por
  * eso comparte sitio con las demás secciones (`equipos`…): ff-api no deja que una competición
@@ -27,6 +28,14 @@ export const SITE_LANGUAGES = ['es', 'en'] as const;
 export type SiteLanguage = (typeof SITE_LANGUAGES)[number];
 
 export const SITE_DEFAULT_LANGUAGE: SiteLanguage = SITE_LANGUAGES[0];
+
+/**
+ * Ajustes del visitante (aspecto, combinación de color e idioma). Una sola URL, fuera de los
+ * prefijos de idioma: el idioma de esta página es la preferencia guardada, no el de la URL
+ * que se estaba viendo. Hay que reservar la palabra en `Competition::RESERVED_SLUGS`.
+ */
+export const PROFILE_SEGMENT = 'profile';
+export const PROFILE_PATH = `/${PROFILE_SEGMENT}`;
 
 /** Palabras de las URLs en un idioma. */
 export interface SiteSegments {

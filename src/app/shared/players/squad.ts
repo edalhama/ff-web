@@ -1,7 +1,7 @@
-import {PlayerPosition} from '../models/player';
+import {PlayerPosition, PlayerStatus} from '../models/player';
 
-/** Orden en que se enseñan las demarcaciones; sin posición, al final. */
-export const POSITION_ORDER: readonly PlayerPosition[] = ['goalkeeper', 'defender', 'midfielder', 'forward'];
+/** Orden en que se enseñan las demarcaciones: el entrenador tras los jugadores; sin posición, al final. */
+export const POSITION_ORDER: readonly PlayerPosition[] = ['goalkeeper', 'defender', 'midfielder', 'forward', 'coach'];
 
 export interface PositionGroup<T> {
   /** `null`: jugadores sin posición conocida. */
@@ -36,4 +36,17 @@ export function ageOn(birthDate: string | null | undefined, today: Date): number
   const age = today.getFullYear() - year - (hadBirthday ? 0 : 1);
 
   return age >= 0 && age < 100 ? age : null;
+}
+
+const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'>> = {
+  ok: 'success',
+  doubt: 'warning',
+  warned: 'warning',
+  injured: 'danger',
+  suspended: 'danger',
+};
+
+/** Color del estado de un jugador en su ficha. */
+export function playerStatusTone(status: PlayerStatus): 'success' | 'warning' | 'danger' | 'neutral' {
+  return STATUS_TONE[status] ?? 'neutral';
 }

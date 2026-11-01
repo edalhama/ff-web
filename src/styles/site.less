@@ -11,12 +11,6 @@
   padding-bottom: var(--edas-space-7);
   color: var(--edas-text-color);
 
-  // La cabecera pública es fija. Por debajo de @lg el contenido del shell ya reserva su
-  // altura; en escritorio no (igual que `.edas-landing`).
-  @media (min-width: @lg) {
-    padding-top: var(--edas-header-height);
-  }
-
   // Con <tui-root> no aplica el reset de encabezados de text.less
   h1,
   h2,
@@ -56,24 +50,6 @@
   flex-direction: column;
   gap: var(--edas-space-3);
   padding-top: var(--edas-space-4);
-}
-
-.site-crumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--edas-space-2);
-  font-size: 0.8125rem;
-  color: var(--edas-muted-text-color);
-
-  a {
-    color: inherit;
-    text-decoration: none;
-
-    &:hover {
-      color: var(--edas-text-color);
-      text-decoration: underline;
-    }
-  }
 }
 
 .site-title {
@@ -435,35 +411,5 @@ a.site-card:hover {
     border-color: transparent;
     color: rgb(var(--edas-tone-primary-rgb));
     background: rgba(var(--edas-tone-primary-rgb), var(--edas-soft-alpha));
-  }
-}
-
-// ── Cabecera del sitio: idiomas ─────────────────────────────────────────────────────────────
-
-.site-languages {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--edas-surface-border-color);
-  border-radius: var(--edas-radius-pill);
-}
-
-.site-language {
-  padding: 3px 9px;
-  border-radius: var(--edas-radius-pill);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--edas-muted-text-color);
-  text-decoration: none;
-
-  &:hover {
-    color: var(--edas-text-color);
-  }
-
-  &--active {
-    color: var(--edas-text-color);
-    background: rgba(var(--edas-tone-neutral-rgb), var(--edas-soft-alpha));
   }
 }

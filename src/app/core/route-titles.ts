@@ -10,8 +10,12 @@ export const ROUTE_TITLE = {
   season: 'title.season',
   teams: 'title.teams',
   team: 'title.team',
+  players: 'title.players',
+  player: 'title.player',
   cache: 'title.cache',
+  tasks: 'title.tasks',
   links: 'title.links',
   link: 'title.link',
   notFound: 'title.not-found',
+  profile: 'title.profile',
 } as const;

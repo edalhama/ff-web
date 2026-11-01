@@ -1,7 +1,6 @@
 import {computed, inject, Signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {ActivatedRoute} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
 import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {map} from 'rxjs';
 import {SiteCompetitionContext} from '../../../shared/models/site';
@@ -32,14 +31,14 @@ export interface CompetitionPageContext {
   /** Ruta de la ficha de un equipo; null si no tiene página. */
   teamLink: (team: TeamSummary & {slug?: string | null}) => string | null;
   /**
-   * Metadatos comunes de una página: sus URLs por idioma, la canónica, las migas y la
-   * competición como dato estructurado. `round` solo para el calendario.
+   * Metadatos comunes de una página: sus URLs por idioma, la canónica y la competición como
+   * dato estructurado. Las migas salen de las rutas (`edas-breadcrumbs`). `round` solo para
+   * el calendario.
    */
-  meta(page: CompetitionPage, round?: number | null): Pick<SitePageMeta, 'alternates' | 'canonical' | 'breadcrumbs' | 'schema' | 'titleParams'>;
+  meta(page: CompetitionPage, round?: number | null): Pick<SitePageMeta, 'alternates' | 'canonical' | 'schema' | 'titleParams'>;
 }
 
 export function injectCompetitionPage(route: ActivatedRoute = inject(ActivatedRoute)): CompetitionPageContext {
-  const translate = inject(TranslateService);
   const lang = inject(LocaleService).language() as SiteLanguage;
 
   // La ruta de la competición es esta misma (cabecera) o la padre (sus páginas)
@@ -83,18 +82,11 @@ export function injectCompetitionPage(route: ActivatedRoute = inject(ActivatedRo
       // La temporada actual se ve con y sin temporada en la URL: la canónica es la que no la
       // lleva. Las demás solo existen con ella.
       const canonicalSeason = season && !season.is_current ? season.slug : null;
-      const overview = competitionPath(lang, current?.competition.slug ?? '', {season: canonicalSeason});
 
       return {
         titleParams: {competition: current?.competition.name ?? '', season: season?.label ?? '', round},
         alternates: alternates(page, seasonInUrl(), round),
         canonical: alternates(page, canonicalSeason, round),
-        breadcrumbs: [
-          {name: label(), path: overview},
-          ...(page === 'overview'
-            ? []
-            : [{name: translate.instant(`site.competition.tab-${page}`), path: competitionPath(lang, current?.competition.slug ?? '', {page, season: canonicalSeason})}]),
-        ],
         schema: current ? [competitionSchema(lang, current.competition)] : [],
       };
     },

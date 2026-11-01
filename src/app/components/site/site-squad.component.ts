@@ -5,7 +5,8 @@ import {ageOn, groupByPosition} from '../../shared/players/squad';
 
 /**
  * Plantilla de un equipo en la parte pública: un bloque por demarcación (porteros, defensas,
- * centrocampistas, delanteros) con el dorsal, el nombre, el país y la edad de cada jugador.
+ * centrocampistas, delanteros, entrenador) con la cara (del proveedor que prefiera la
+ * competición), el dorsal, el nombre, el país y la edad de cada jugador.
  */
 @Component({
   selector: 'app-site-squad',
@@ -19,6 +20,9 @@ import {ageOn, groupByPosition} from '../../shared/players/squad';
         <ul class="players">
           @for (player of group.players; track player.slug) {
             <li class="player">
+              @if (player.photo) {
+                <img class="photo" [src]="player.photo" alt="" width="36" height="36" loading="lazy" (error)="hideImage($event)"/>
+              }
               <span class="number" [attr.aria-label]="player.shirt_number !== null ? ('site.squad.number' | translate: {number: player.shirt_number}) : null">
                 {{ player.shirt_number ?? '–' }}
               </span>
@@ -68,6 +72,15 @@ import {ageOn, groupByPosition} from '../../shared/players/squad';
       border-bottom: 1px solid var(--edas-surface-border-color);
     }
 
+    .photo {
+      flex: none;
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 50%;
+      background: rgba(var(--edas-tone-neutral-rgb), 0.14);
+    }
+
     .number {
       flex: none;
       width: 2rem;
@@ -112,6 +125,11 @@ export class SiteSquadComponent {
   protected readonly groups = computed(() => groupByPosition(this.players()));
 
   private readonly today = new Date();
+
+  /** Una foto que no carga deja su hueco vacío, sin el icono de imagen rota. */
+  protected hideImage(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
+  }
 
   /** «España · 24 años». */
   protected details(player: SiteSquadPlayer): string {

@@ -82,6 +82,7 @@ Lo reutilizable entre proyectos va a `edas-ng` / `edas-layout`; aquí solo vive 
 | `/admin/competitions` | Listado de competiciones | Admin |
 | `/admin/teams` | Listado de equipos | Admin |
 | `/admin/links` | Enlaces con los proveedores | Admin |
+| `/admin/tasks` | Tareas programadas e incidencias | Admin |
 | `/admin/cache` | Caché de las páginas públicas | Admin |
 
 `robots.txt` excluye `/admin` y anuncia el sitemap (`/sitemap.xml`, que genera el servidor de páginas).
@@ -181,6 +182,7 @@ Qué hay en cada ficha:
 - **Caché de páginas** (`/admin/cache`, no es una ficha sino una pantalla): qué páginas públicas hay guardadas, si Cloudflare está enlazado, las últimas purgas, y purgar todo, una página o lo de una competición.
 - **Equipo:** sus textos y datos. No hay alta ni baja: los equipos los crea la sincronización. Sirve sobre todo para corregir los nombres, que los proveedores dan en inglés y sin tildes. La pestaña **Plantilla** enseña los jugadores de cada temporada en la que está inscrito (dorsal, posición, país, edad y estado), también de solo lectura.
 - **Enlace con el proveedor** (pestaña Sincronización de la competición): buscar la competición en el proveedor y enlazarla, cambiar o quitar el enlace, y un interruptor por cada tipo de dato que se trae.
+- **Tareas** (`/admin/tasks`, pantalla): si corre el programador (último latido de `sync:tick`), cada tarea de sincronización (una fuente de cada competición) con su estado, cadencia y próxima ejecución, con botón para lanzarla ahora o abrir la pestaña Sincronización de su competición; las incidencias abiertas (lo que ha fallado, avisado por email por ff-api) con botón para cerrarlas a mano, un correo de prueba para comprobar que el correo del entorno funciona, las últimas resueltas, y las últimas ejecuciones de todo el sistema.
 - **Enlaces** (`/admin/links`, pantalla): cuánto está enlazado con cada proveedor, las competiciones con su id y sus datos, y el listado de equipos, jugadores, estadios y competiciones (filtrable por los que no están enlazados). Cada uno abre el modal `link` para enlazarlo a mano con su id del proveedor.
 - **Sincronización:** calendario y clasificación se esperan en pantalla; con las plantillas (minutos) la API la lanza en segundo plano y la pestaña consulta el estado cada 5 segundos hasta que termina, también si se abre con una ya en marcha.
 
@@ -204,7 +206,7 @@ Tres cosas a tener en cuenta:
 
 - Las etiquetas de los campos `edas-*` pasan por un filtro que deja la primera letra en mayúscula y **el resto en minúsculas**. Evita siglas y nombres propios en ellas («Título para buscadores», no «Título SEO»).
 - `edas-app-card` no traduce `title` ni `description`: se le pasan ya traducidos (`[title]="'common.status' | translate"`).
-- `npm run i18n:sync` no ve las claves que se componen en tiempo de ejecución (`enum.*`, `standing.*`, `*.field-*`, `lang.*`, `site.competition.tab-*`, `site.competition.heading-*`, `cache.state-*`, `cache.reason-*`) y las da por no usadas. **No ejecutes `i18n:prune` sin revisar la lista.** También avisa de claves «faltantes» que solo aparecen en los specs de `edas-ng`; se pueden ignorar.
+- `npm run i18n:sync` no ve las claves que se componen en tiempo de ejecución (`enum.*`, `standing.*`, `*.field-*`, `lang.*`, `site.competition.tab-*`, `site.competition.heading-*`, `cache.state-*`, `cache.reason-*`, `tasks.kind-*`, `tasks.severity-*`, `tasks.status-*`) y las da por no usadas. **No ejecutes `i18n:prune` sin revisar la lista.** También avisa de claves «faltantes» que solo aparecen en los specs de `edas-ng`; se pueden ignorar.
 
 El namespace `server` no tiene entradas en los JSON: lo rellena `ServerErrors` con los mensajes que llegan de la API.
 

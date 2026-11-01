@@ -3,7 +3,7 @@ import {inject, Injectable} from '@angular/core';
 import {map, Observable} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 import {ApiResponse} from '../../models/api';
-import {ProviderCompetition, SyncDataType, SyncState} from '../../models/sync';
+import {ProviderCompetition, SourceAspect, SyncDataType, SyncState} from '../../models/sync';
 
 /** Sincronización de una competición con sus proveedores de datos. */
 @Injectable({providedIn: 'root'})
@@ -76,12 +76,33 @@ export class SyncApiService {
       .pipe(map((response) => this.normalize(response.data)));
   }
 
+  /** Cadencia propia de una fuente, en minutos; null vuelve a la de su tipo de dato. */
+  setSourceInterval(competitionId: number, provider: string, dataType: SyncDataType, minutes: number | null): Observable<SyncState> {
+    return this.http
+      .put<ApiResponse<SyncState>>(`${environment.api.url}admin/competitions/${competitionId}/sync/sources`, {provider, data_type: dataType, interval_minutes: minutes})
+      .pipe(map((response) => this.normalize(response.data)));
+  }
+
+  /** Proveedor preferido para cada aspecto; null vuelve al defecto. Lo no indicado no cambia. */
+  setPreferences(competitionId: number, choices: Partial<Record<SourceAspect, string | null>>): Observable<SyncState> {
+    return this.http
+      .put<ApiResponse<SyncState>>(`${environment.api.url}admin/competitions/${competitionId}/sync/preferences`, choices)
+      .pipe(map((response) => this.normalize(response.data)));
+  }
+
   /** Estado que viaja en el cuerpo de un error de `run()`, o null si el error no lo trae. */
   stateOf(errorBody: {data?: Partial<SyncState>} | null): SyncState | null {
     return errorBody?.data?.runs ? this.normalize(errorBody.data) : null;
   }
 
   private normalize(data: Partial<SyncState> | null | undefined): SyncState {
-    return {providers: data?.providers ?? [], links: data?.links ?? [], sources: data?.sources ?? [], runs: data?.runs ?? []};
+    return {
+      providers: data?.providers ?? [],
+      links: data?.links ?? [],
+      sources: data?.sources ?? [],
+      runs: data?.runs ?? [],
+      live: data?.live ?? false,
+      preferences: data?.preferences ?? [],
+    };
   }
 }

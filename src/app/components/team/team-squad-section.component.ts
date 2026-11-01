@@ -1,33 +1,28 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslatePipe} from '@ngx-translate/core';
+import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
 import {EdasTabItem, TabsComponent} from '@edas/ng/wrapper/components/tabs/tabs.component';
-import {PlayerStatus, SquadMember, TeamSquad} from '../../shared/models/player';
+import {PlayerRating, playerModalId, SquadMember, TeamSquad} from '../../shared/models/player';
 import {Team} from '../../shared/models/team';
-import {ageOn} from '../../shared/players/squad';
+import {ageOn, playerStatusTone} from '../../shared/players/squad';
 import {TeamApiService} from '../../shared/services/api/team-api.service';
-
-const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'>> = {
-  ok: 'success',
-  doubt: 'warning',
-  warned: 'warning',
-  injured: 'danger',
-  suspended: 'danger',
-};
+import {PlayerRatingBadgeComponent} from '../player/player-rating-badge.component';
 
 /**
  * Plantilla de un equipo (sección `squad` del modal `team`): una pestaña por temporada en la
- * que está inscrito, con dorsal, posición, país, edad y estado de cada jugador. Es de solo
- * lectura: llega por la sincronización de plantillas. Los que han dejado el equipo salen al
- * final, atenuados.
+ * que está inscrito, con dorsal, posición, valoración en el videojuego, país, edad y estado de
+ * cada jugador. Es de solo lectura: llega por la sincronización de plantillas y de
+ * valoraciones. Los que han dejado el equipo salen al final, atenuados. Cada fila abre la ficha
+ * del jugador en esa competición.
  */
 @Component({
   selector: 'app-team-squad-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppCardComponent, BadgeComponent, LoaderComponent, TabsComponent, TranslatePipe],
+  imports: [AppCardComponent, BadgeComponent, LoaderComponent, PlayerRatingBadgeComponent, TabsComponent, TranslatePipe],
   template: `
     @if (squads(); as list) {
       @if (list.length > 1) {
@@ -39,6 +34,9 @@ const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'
           <p class="note">
             {{ squad.competition.name }} · {{ squad.season.label }} ·
             {{ 'team.squad-count' | translate: {count: activeCount()} }}
+            @if (ratingSource(); as source) {
+              · {{ 'team.squad-rating-source' | translate: {provider: source.provider.name, edition: source.edition} }}
+            }
           </p>
 
           <div class="ff-panel ff-panel--scroll" data-no-section-swipe>
@@ -48,6 +46,7 @@ const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'
                   <th class="end" scope="col">{{ 'team.squad-number' | translate }}</th>
                   <th class="sticky" scope="col">{{ 'team.squad-player' | translate }}</th>
                   <th scope="col">{{ 'team.squad-position' | translate }}</th>
+                  <th scope="col">{{ 'team.squad-rating' | translate }}</th>
                   <th scope="col">{{ 'team.squad-country' | translate }}</th>
                   <th class="end" scope="col">{{ 'team.squad-age' | translate }}</th>
                   <th scope="col">{{ 'team.squad-status' | translate }}</th>
@@ -55,15 +54,47 @@ const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'
               </thead>
               <tbody>
                 @for (member of squad.members; track member.id) {
-                  <tr [class.gone]="!member.active">
+                  <tr
+                    [class.gone]="!member.active"
+                    tabindex="0"
+                    (click)="openPlayer(member, squad)"
+                    (keydown.enter)="openPlayer(member, squad)"
+                  >
                     <td class="end number">{{ member.shirt_number ?? '–' }}</td>
                     <td class="sticky">
+                      <span class="who">
+                        @if (member.player.photo) {
+                          <img class="photo" [src]="member.player.photo" alt="" width="32" height="32" loading="lazy" (error)="hideImage($event)"/>
+                        }
+                        <span>
                       <span class="name">{{ member.player.name }}</span>
                       @if (member.player.full_name && member.player.full_name !== member.player.name) {
                         <span class="full-name">{{ member.player.full_name }}</span>
                       }
+                        </span>
+                      </span>
                     </td>
-                    <td>{{ member.position ? ('enum.player-position.' + member.position | translate) : '—' }}</td>
+                    <td>
+                      {{ member.position ? ('enum.player-position.' + member.position | translate) : '—' }}
+                      @if (member.player.foot) {
+                        <span class="sub">{{ 'enum.foot.' + member.player.foot | translate }}</span>
+                      }
+                    </td>
+                    <td>
+                      @if (member.player.rating; as rating) {
+                        <span class="rating">
+                          <app-player-rating-badge [rating]="rating"/>
+                          <span class="game-position">
+                            {{ rating.position ?? '' }}
+                            @if (rating.alt_positions.length > 0) {
+                              <span class="sub">{{ rating.alt_positions.join(', ') }}</span>
+                            }
+                          </span>
+                        </span>
+                      } @else {
+                        <span class="muted">—</span>
+                      }
+                    </td>
                     <td>{{ member.player.country?.name ?? '—' }}</td>
                     <td class="end">{{ age(member) ?? '—' }}</td>
                     <td>
@@ -108,6 +139,21 @@ const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'
       font-weight: 700;
     }
 
+    .who {
+      display: flex;
+      align-items: center;
+      gap: var(--edas-space-2);
+    }
+
+    .photo {
+      width: 32px;
+      height: 32px;
+      flex: none;
+      object-fit: cover;
+      border-radius: 50%;
+      background: rgba(var(--edas-tone-neutral-rgb), 0.14);
+    }
+
     .name {
       display: block;
       font-weight: 600;
@@ -117,6 +163,22 @@ const STATUS_TONE: Partial<Record<PlayerStatus, 'success' | 'warning' | 'danger'
     .muted {
       font-size: 0.8125rem;
       color: var(--edas-muted-text-color);
+    }
+
+    .sub {
+      display: block;
+      font-size: 0.8125rem;
+      color: var(--edas-muted-text-color);
+    }
+
+    .rating {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--edas-space-2);
+    }
+
+    .game-position {
+      font-weight: 600;
     }
 
     .gone td {
@@ -129,6 +191,7 @@ export class TeamSquadSectionComponent implements OnInit {
   public readonly data = input<Team>();
 
   private readonly teamApi = inject(TeamApiService);
+  private readonly stack = inject(ModalStackService);
   private readonly destroyRef = inject(DestroyRef);
 
   /** `null` mientras cargan. */
@@ -150,6 +213,14 @@ export class TeamSquadSectionComponent implements OnInit {
   );
 
   protected readonly activeCount = computed(() => this.selected()?.members.filter((member) => member.active).length ?? 0);
+
+  /** De dónde y de qué edición son las valoraciones de la plantilla: la más reciente que haya. */
+  protected readonly ratingSource = computed(() =>
+    (this.selected()?.members ?? [])
+      .map((member) => member.player.rating)
+      .filter((rating): rating is PlayerRating => rating !== null)
+      .reduce<PlayerRating | null>((latest, rating) => (latest === null || rating.edition > latest.edition ? rating : latest), null),
+  );
 
   protected readonly String = String;
 
@@ -179,7 +250,17 @@ export class TeamSquadSectionComponent implements OnInit {
     return ageOn(member.player.birth_date, this.today);
   }
 
+  /** Una foto que no carga deja su hueco vacío, sin el icono de imagen rota. */
+  protected hideImage(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
+  }
+
+  /** Ficha del jugador, en la competición de esta plantilla. */
+  protected openPlayer(member: SquadMember, squad: TeamSquad): void {
+    this.stack.push({modalKey: 'player', section: 'info', id: playerModalId(member.player.id, squad.competition.id)});
+  }
+
   protected tone(member: SquadMember): 'success' | 'warning' | 'danger' | 'neutral' {
-    return STATUS_TONE[member.status] ?? 'neutral';
+    return playerStatusTone(member.status);
   }
 }

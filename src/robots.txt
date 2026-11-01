@@ -1,5 +1,6 @@
 User-agent: *
 Disallow: /admin
+Disallow: /profile
 Disallow: /backend/
 
 Sitemap: https://fantasyfutbol.es/sitemap.xml

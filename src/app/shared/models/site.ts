@@ -153,6 +153,8 @@ export interface SiteSquadPlayer {
   slug: string;
   shirt_number: number | null;
   position: PlayerPosition | null;
+  /** Cara, del proveedor que prefiera la competición; null si ninguno la tiene. */
+  photo: string | null;
   /** `AAAA-MM-DD`. */
   birth_date: string | null;
   country: SiteCountry | null;

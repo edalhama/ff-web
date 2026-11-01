@@ -3,9 +3,14 @@
 # Quién atiende cada petición:
 #   /backend/...        → ff-api (Laravel), por el enlace simbólico `backend`
 #   ficheros reales     → Apache, directamente (JS, CSS, imágenes, robots.txt…)
-#   /admin...           → el esqueleto de la app (`index.csr.html`): el panel se pinta en el navegador
+#   /admin..., /profile → el esqueleto de la app (`index.csr.html`): se pintan en el navegador
 #   todo lo demás       → el servidor de render (Node, en 127.0.0.1:4000), que genera la página
 #                         o la saca de su caché. Ver DEPLOY.md.
+
+# Sin esto, Apache resuelve la portada (`/`) como `/index.php` (primer DirectoryIndex de aaPanel):
+# la regla del proxy lo manda al servidor de render, que lo trata como el slug de una competición
+# y responde 404. La portada la tiene que generar el servidor de render como cualquier otra página.
+DirectoryIndex disabled
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
@@ -22,8 +27,10 @@
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # Panel de administración: esqueleto vacío de la app
+  # Panel de administración y ajustes del visitante: esqueleto vacío de la app.
+  # Dependen de lo guardado en el dispositivo (idioma, aspecto), no de la URL.
   RewriteRule ^admin(/.*)?$ /index.csr.html [L]
+  RewriteRule ^profile/?$ /index.csr.html [L]
 
   # El resto son páginas públicas: las genera el servidor de render. [P] = proxy inverso
   # (necesita mod_proxy y mod_proxy_http, activos de serie en aaPanel).

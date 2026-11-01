@@ -6,7 +6,7 @@ import {filter, map, startWith} from 'rxjs';
 import {SiteErrorComponent} from '../../../components/site/site-error.component';
 import {SiteCompetitionContext, SiteSeasonSummary} from '../../../shared/models/site';
 import {SiteData} from '../../../site/site-data';
-import {competitionPath, CompetitionPage, homePath} from '../../../site/site-links';
+import {competitionPath, CompetitionPage} from '../../../site/site-links';
 import {SiteNotFoundScreenComponent} from '../not-found/site-not-found-screen.component';
 import {injectCompetitionPage} from './competition-page';
 
@@ -27,12 +27,6 @@ const PAGES: readonly CompetitionPage[] = ['overview', 'standings', 'fixtures', 
     @if (page.context(); as context) {
       <div class="site-page">
         <div class="site-header">
-          <nav class="site-crumbs" [attr.aria-label]="'site.breadcrumbs' | translate">
-            <a [routerLink]="home">{{ 'site.home.competitions' | translate }}</a>
-            <span aria-hidden="true">/</span>
-            <a [routerLink]="page.path('overview')">{{ context.competition.name }}</a>
-          </nav>
-
           <h1 class="site-title">{{ heading() }}</h1>
 
           <p class="site-meta">{{ meta(context) }}</p>
@@ -79,7 +73,6 @@ export class CompetitionLayoutComponent {
 
   protected readonly page = injectCompetitionPage(this.route);
   protected readonly pages = PAGES;
-  protected readonly home = homePath(this.page.lang);
 
   private readonly result = toSignal(this.route.data.pipe(map((data) => data['context'] as SiteData<SiteCompetitionContext>)));
   /** La API no ha respondido (distinto de «no existe»). */

@@ -12,7 +12,7 @@ import {SiteTeam, SiteTeamPage} from '../../../shared/models/site';
 import {TeamSummary} from '../../../shared/models/team';
 import {SiteClockService} from '../../../site/site-clock.service';
 import {SiteData} from '../../../site/site-data';
-import {competitionPath, homePath, SITE_LANGUAGES, SiteLanguage, teamPath} from '../../../site/site-links';
+import {competitionPath, SITE_LANGUAGES, SiteLanguage, teamPath} from '../../../site/site-links';
 import {teamSchema} from '../../../site/site-schema';
 import {SiteAlternates, SiteSeoService} from '../../../site/site-seo.service';
 import {SiteNotFoundScreenComponent} from '../not-found/site-not-found-screen.component';
@@ -29,16 +29,6 @@ import {SiteNotFoundScreenComponent} from '../not-found/site-not-found-screen.co
     @if (page(); as current) {
       <div class="site-page">
         <div class="site-header">
-          <nav class="site-crumbs" [attr.aria-label]="'site.breadcrumbs' | translate">
-            <a [routerLink]="home">{{ 'site.home.competitions' | translate }}</a>
-            @if (current.competitions[0]; as main) {
-              <span aria-hidden="true">/</span>
-              <a [routerLink]="competitionLink(main.competition.slug, 'overview')">{{ main.competition.name }}</a>
-              <span aria-hidden="true">/</span>
-              <a [routerLink]="competitionLink(main.competition.slug, 'teams')">{{ 'site.competition.tab-teams' | translate }}</a>
-            }
-          </nav>
-
           <h1 class="site-title">{{ current.team.name }}</h1>
 
           <dl class="site-facts">
@@ -123,8 +113,6 @@ export class SiteTeamScreenComponent {
   private readonly lang = inject(LocaleService).language() as SiteLanguage;
   protected readonly clock = inject(SiteClockService);
 
-  protected readonly home = homePath(this.lang);
-
   private readonly result = toSignal(inject(ActivatedRoute).data.pipe(map((data) => data['team'] as SiteData<SiteTeamPage>)));
 
   protected readonly page = computed(() => {
@@ -167,10 +155,6 @@ export class SiteTeamScreenComponent {
             competition: [main?.competition.name, main?.season.label].filter(Boolean).join(' '),
           }),
         alternates,
-        breadcrumbs: [
-          ...(main ? [{name: main.competition.name ?? '', path: this.competitionLink(main.competition.slug, 'overview')}] : []),
-          {name: team.name ?? '', path: teamPath(this.lang, team.slug ?? '')},
-        ],
         schema: [teamSchema(this.lang, team, current.competitions.map((each) => each.competition), current.squad?.players ?? [])],
       });
     });

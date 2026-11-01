@@ -11,6 +11,7 @@ import {
   provideEdasSession,
   provideEdasTranslations,
   provideModalStack,
+  RouteTitleResolver,
   withEdasViewTransitions,
 } from '@edas/ng';
 import { provideEdasSeo } from '@edas/ng/seo/seo.service';
@@ -18,6 +19,7 @@ import { provideEdasSeo } from '@edas/ng/seo/seo.service';
 import { environment } from '../environments/environment';
 import { AppModalRegistry } from './core/app-modal-registry';
 import { AppNavigation } from './core/app-navigation';
+import { AppRouteTitleResolver } from './core/app-route-title.resolver';
 import { authTokenInterceptor } from './core/auth-token.interceptor';
 import { edasConfig } from './core/edas.config';
 import { routes } from './routes';
@@ -34,6 +36,7 @@ export const commonProviders: Array<Provider | EnvironmentProviders> = [
   provideZonelessChangeDetection(),
   provideRouter(routes, withEdasViewTransitions()),
   provideEdasNavigation(AppNavigation),
+  {provide: RouteTitleResolver, useExisting: AppRouteTitleResolver},
   provideModalStack({ registry: AppModalRegistry, fallbackUrl: ADMIN_HOME_PATH }),
   // Guards de sesión e interceptor HTTP (401/403 → SessionService.clearSession()).
   provideEdasSession(SessionService, { loginPath: LOGIN_PATH, homePath: ADMIN_HOME_PATH }),

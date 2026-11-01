@@ -3,8 +3,8 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 /**
  * Dónde se genera cada ruta.
  *
- *  - El panel (`/admin/**`) se pinta en el navegador: depende del token guardado en
- *    `localStorage` y de llamadas autenticadas, y a los buscadores no les interesa.
+ *  - El panel (`/admin/**`) y los ajustes (`/profile`) se pintan en el navegador: dependen de
+ *    lo guardado en el dispositivo (sesión, idioma, aspecto), y a los buscadores no les interesa.
  *  - Todo lo demás (la parte pública) se genera en el servidor en cada petición, con los datos
  *    del momento, para que buscadores y redes reciban la página completa. Quien evita
  *    repetir ese trabajo es la caché de páginas (`src/server.ts`).
@@ -14,5 +14,7 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
  */
 export const serverRoutes: ServerRoute[] = [
   { path: 'admin/**', renderMode: RenderMode.Client },
+  // Ajustes del visitante: idioma y aspecto salen del dispositivo, no de la URL.
+  { path: 'profile', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Server },
 ];

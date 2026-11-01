@@ -2,7 +2,7 @@ import {DOCUMENT} from '@angular/common';
 import {inject, Injectable, signal} from '@angular/core';
 import {Meta} from '@angular/platform-browser';
 import {TranslateService} from '@ngx-translate/core';
-import {injectEdasConfig} from '@edas/ng';
+import {BreadcrumbsSeoService, injectEdasConfig} from '@edas/ng';
 import {PageTitleService} from '@edas/ng/navigation/page-title/page-title.service';
 import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {environment} from '../../environments/environment';
@@ -17,7 +17,7 @@ export interface SitePageMeta {
   title: string;
   titleParams?: Record<string, unknown>;
   description: string;
-  /** Esta página en cada idioma: de aquí salen `hreflang` y el selector de idioma. */
+  /** Esta página en cada idioma: de aquí salen las etiquetas `hreflang`. */
   alternates: SiteAlternates;
   /**
    * Ruta canónica en cada idioma, si no es la propia. La temporada actual tiene dos URLs
@@ -26,8 +26,6 @@ export interface SitePageMeta {
   canonical?: SiteAlternates;
   /** `false` para páginas que no deben indexarse (errores, páginas sin contenido). */
   index?: boolean;
-  /** Camino hasta la página, sin la portada (se añade sola). */
-  breadcrumbs?: Array<{name: string; path: string}>;
   /** Nodos de schema.org propios de la página (`SportsTeam`, `SportsEvent`…). */
   schema?: Array<Record<string, unknown>>;
 }
@@ -62,10 +60,11 @@ export class SiteSeoService {
   private readonly translate = inject(TranslateService);
   private readonly locale = inject(LocaleService);
   private readonly pageTitle = inject(PageTitleService);
+  private readonly breadcrumbSeo = inject(BreadcrumbsSeoService);
   private readonly appName = injectEdasConfig().appName;
 
   private readonly _alternates = signal<SiteAlternates | null>(null);
-  /** La página actual en cada idioma, para el selector de idioma; null fuera de una página con datos. */
+  /** La página actual en cada idioma; null fuera de una página con datos. */
   public readonly alternates = this._alternates.asReadonly();
 
   apply(page: SitePageMeta): void {
@@ -162,27 +161,20 @@ export class SiteSeoService {
     const home = this.url('/');
     const organization = {'@id': `${home}#organization`};
 
+    // El BreadcrumbList lo escribe `BreadcrumbsSeoService` (el mismo rastro que la barra).
+    // Aquí solo se referencia, y con el `@id` de la URL que se está viendo: puede no coincidir
+    // con la canónica (la temporada actual tiene dos direcciones).
+    const breadcrumbId = this.breadcrumbSeo.structuredId();
+
     const graph: Array<Record<string, unknown>> = [
       {'@type': 'Organization', ...organization, name: this.appName, url: home, logo: image},
       {'@type': 'WebSite', '@id': `${home}#website`, name: this.appName, url: home, inLanguage: [...SITE_LANGUAGES], publisher: organization},
       {
         '@type': 'WebPage', '@id': `${url}#webpage`, url, name: this.translate.instant(page.title, page.titleParams),
         description: page.description, inLanguage: lang, isPartOf: {'@id': `${home}#website`},
-        ...(page.breadcrumbs?.length ? {breadcrumb: {'@id': `${url}#breadcrumb`}} : {}),
+        ...(breadcrumbId ? {breadcrumb: {'@id': breadcrumbId}} : {}),
       },
     ];
-
-    if (page.breadcrumbs?.length) {
-      const trail = [{name: this.appName, path: homePath(lang)}, ...page.breadcrumbs];
-
-      graph.push({
-        '@type': 'BreadcrumbList',
-        '@id': `${url}#breadcrumb`,
-        itemListElement: trail.map((crumb, index) => ({
-          '@type': 'ListItem', position: index + 1, name: crumb.name, item: this.url(crumb.path),
-        })),
-      });
-    }
 
     graph.push(...(page.schema ?? []));
 

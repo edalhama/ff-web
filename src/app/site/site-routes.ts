@@ -1,4 +1,5 @@
 import {Route, Routes} from '@angular/router';
+import {ROUTE_TITLE} from '../core/route-titles';
 import {usePreferredLanguage, useSiteLanguage} from './site-language.guard';
 import {SITE_DEFAULT_LANGUAGE, SITE_LANGUAGES, SITE_SEGMENTS, SiteLanguage} from './site-links';
 import {
@@ -41,34 +42,38 @@ function languageRoutes(lang: SiteLanguage): Route {
       path: segments.standings,
       loadComponent: () => import('../screens/site/competition/competition-standings.component').then((m) => m.CompetitionStandingsComponent),
       resolve: {standings: standingsResolver},
-      data: {page: 'standings'},
+      data: {page: 'standings', titleKey: 'site.competition.tab-standings', icon: 'list'},
     },
     {
       path: segments.fixtures,
       loadComponent: () => import('../screens/site/competition/competition-fixtures.component').then((m) => m.CompetitionFixturesComponent),
       resolve: {fixtures: fixturesResolver},
-      data: {page: 'fixtures'},
+      data: {page: 'fixtures', titleKey: 'site.competition.tab-fixtures', icon: 'calendar'},
     },
     {
       // `:round` es `jornada-12`; lo valida el resolver
       path: `${segments.fixtures}/:round`,
       loadComponent: () => import('../screens/site/competition/competition-fixtures.component').then((m) => m.CompetitionFixturesComponent),
       resolve: {fixtures: fixturesResolver},
-      data: {page: 'fixtures'},
+      data: {page: 'fixtures', titleKey: 'site.competition.tab-fixtures', icon: 'calendar'},
     },
     {
       path: segments.teams,
       loadComponent: () => import('../screens/site/competition/competition-teams.component').then((m) => m.CompetitionTeamsComponent),
       resolve: {teams: competitionTeamsResolver},
-      data: {page: 'teams'},
+      data: {page: 'teams', titleKey: 'site.competition.tab-teams', icon: 'shield'},
     },
   ];
 
   const competition = () => import('../screens/site/competition/competition-layout.component').then((m) => m.CompetitionLayoutComponent);
 
+  const competitionData = {titleKey: ROUTE_TITLE.competition, icon: 'trophy'};
+
   return {
     path: segments.prefix,
     canActivate: [useSiteLanguage(lang)],
+    // Primera miga de toda la parte pública, y el JSON-LD de ese rastro. Un 404 hijo lo apaga.
+    data: {titleKey: 'site.home.competitions', icon: 'trophy', seoBreadcrumbs: true},
     children: [
       {path: '', pathMatch: 'full', component: SiteHomeScreenComponent, resolve: {home: homeResolver}},
       // Secciones con nombre: antes que la competición, que casaría con ellas
@@ -76,6 +81,7 @@ function languageRoutes(lang: SiteLanguage): Route {
         path: `${segments.teams}/:team`,
         loadComponent: () => import('../screens/site/team/site-team-screen.component').then((m) => m.SiteTeamScreenComponent),
         resolve: {team: teamResolver},
+        data: {titleKey: ROUTE_TITLE.team, icon: 'shield'},
       },
       // Competición sin temporada: la actual. Va antes que la que la lleva: `clasificacion`
       // no es una temporada
@@ -83,17 +89,19 @@ function languageRoutes(lang: SiteLanguage): Route {
         path: ':competition',
         loadComponent: competition,
         resolve: {context: competitionResolver},
+        data: competitionData,
         children: competitionPages(),
       },
       {
         path: ':competition/:season',
         loadComponent: competition,
         resolve: {context: competitionResolver},
+        data: competitionData,
         children: competitionPages(),
       },
       // Bajo el prefijo de un idioma, lo que no exista es un 404 en ese idioma. El principal
       // no tiene prefijo: su 404 es el general de la app (ver routes.ts)
-      ...(segments.prefix ? [{path: '**', loadComponent: notFound}] : []),
+      ...(segments.prefix ? [{path: '**', loadComponent: notFound, data: {titleKey: ROUTE_TITLE.notFound, icon: 'search', seoBreadcrumbs: false}}] : []),
     ],
   };
 }
@@ -111,5 +119,6 @@ export const siteRoutes: Routes = [...SITE_LANGUAGES].sort((a, b) => Number(!SIT
 export const siteNotFoundRoute: Route = {
   path: '**',
   loadComponent: notFound,
+  data: {titleKey: ROUTE_TITLE.notFound, icon: 'search', seoBreadcrumbs: false},
   canActivate: [(route, state) => (state.url.startsWith('/admin') ? usePreferredLanguage : useSiteLanguage(SITE_DEFAULT_LANGUAGE))(route, state)],
 };

@@ -1,4 +1,4 @@
-export type SyncDataType = 'calendar' | 'standings' | 'squads' | 'statuses' | 'lineups' | 'events' | 'stats' | 'scores';
+export type SyncDataType = 'calendar' | 'standings' | 'squads' | 'statuses' | 'lineups' | 'events' | 'stats' | 'scores' | 'ratings';
 export type SyncStatus = 'running' | 'success' | 'partial' | 'failed';
 
 /** Qué proveedor alimenta un tipo de dato de la competición. */
@@ -10,6 +10,28 @@ export interface SyncSource {
   external_id: string | null;
   active: boolean;
   last_run_at: string | null;
+  last_attempt_at: string | null;
+  /** Cadencia propia en minutos; null = la de su tipo de dato (`default_interval`). */
+  interval_minutes: number | null;
+  default_interval: number | null;
+  /** Cadencia corta mientras la competición está en directo; null = no cambia. */
+  live_interval: number | null;
+  next_run_at: string | null;
+}
+
+/** Aspecto para el que se puede preferir un proveedor. */
+export type SourceAspect = 'player_photo' | 'team_crest' | 'player_name';
+
+/** Qué proveedor se muestra (o escribe) para un aspecto en la competición. */
+export interface SourcePreference {
+  aspect: SourceAspect;
+  /** Se resuelve al leer (imagen); si no, decide qué sincronización escribe la columna. */
+  read_time: boolean;
+  /** Elegido; null = el orden por defecto. */
+  provider: string | null;
+  /** Códigos de proveedor en el orden por defecto. */
+  default: string[];
+  options: Array<{code: string; name: string}>;
 }
 
 /** Una ejecución de la sincronización de un tipo de dato. */
@@ -63,6 +85,9 @@ export interface SyncState {
   links: CompetitionLink[];
   sources: SyncSource[];
   runs: SyncRun[];
+  /** Hay un partido en juego, a punto de empezar o recién acabado. */
+  live: boolean;
+  preferences: SourcePreference[];
 }
 
 /** Competición encontrada en un proveedor. */

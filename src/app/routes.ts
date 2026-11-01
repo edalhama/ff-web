@@ -3,6 +3,7 @@ import { requireAnonymous, requireSession, scrollToTopBeforeEnter } from '@edas/
 
 import { ROUTE_TITLE } from './core/route-titles';
 import { usePreferredLanguage } from './site/site-language.guard';
+import { PROFILE_SEGMENT } from './site/site-links';
 import { siteNotFoundRoute, siteRoutes } from './site/site-routes';
 
 /**
@@ -11,6 +12,7 @@ import { siteNotFoundRoute, siteRoutes } from './site/site-routes';
  * Las del panel declaran su título i18n y el icono de su miga, y se cargan aparte
  * (`loadComponent`): quien solo visita la parte pública no descarga su código. Van primero
  * porque el idioma principal de la parte pública no tiene prefijo y ocupa la raíz.
+ * `/profile` va antes por lo mismo: si no, la competición (`/:competition`) se lo queda.
  */
 export const routes: Routes = [
   {
@@ -37,6 +39,11 @@ export const routes: Routes = [
         data: { titleKey: ROUTE_TITLE.competitions, icon: 'trophy' },
       },
       {
+        path: 'tasks',
+        loadComponent: () => import('./screens/admin/tasks/tasks-screen.component').then((m) => m.TasksScreenComponent),
+        data: { titleKey: ROUTE_TITLE.tasks, icon: 'list-checks' },
+      },
+      {
         path: 'cache',
         loadComponent: () => import('./screens/admin/cache/cache-screen.component').then((m) => m.CacheScreenComponent),
         data: { titleKey: ROUTE_TITLE.cache, icon: 'database-zap' },
@@ -51,7 +58,18 @@ export const routes: Routes = [
         loadComponent: () => import('./screens/admin/teams/teams-screen.component').then((m) => m.TeamsScreenComponent),
         data: { titleKey: ROUTE_TITLE.teams, icon: 'shield' },
       },
+      {
+        path: 'players',
+        loadComponent: () => import('./screens/admin/players/players-screen.component').then((m) => m.PlayersScreenComponent),
+        data: { titleKey: ROUTE_TITLE.players, icon: 'users' },
+      },
     ],
+  },
+  {
+    path: PROFILE_SEGMENT,
+    loadComponent: () => import('./screens/site/profile/site-profile-screen.component').then((m) => m.SiteProfileScreenComponent),
+    data: { titleKey: ROUTE_TITLE.profile, icon: 'settings' },
+    canActivate: [usePreferredLanguage, scrollToTopBeforeEnter()],
   },
   ...siteRoutes,
   siteNotFoundRoute,

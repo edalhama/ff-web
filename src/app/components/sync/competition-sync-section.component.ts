@@ -1,18 +1,20 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, input, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {apiErrorBody} from '@edas/ng';
 import {ModalStackActionBarService} from '@edas/ng/navigation/modal-stack/modal-stack-action-bar.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {InputComponent} from '@edas/ng/wrapper/components/input/input.component';
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
+import {PickerComponent} from '@edas/ng/wrapper/components/picker/picker.component';
+import {EdasPickerOption} from '@edas/ng/wrapper/components/picker/picker.types';
 import {SwitchComponent} from '@edas/ng/wrapper/components/switch/switch.component';
 import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {NotificationService} from '@edas/ng/wrapper/services/notification.service';
 import {finalize, Subscription, switchMap, takeWhile, timer} from 'rxjs';
 import {Competition} from '../../shared/models/competition';
-import {SyncDataType, SyncRun, SyncSource, SyncState, SyncStatus} from '../../shared/models/sync';
+import {SourceAspect, SourcePreference, SyncDataType, SyncRun, SyncSource, SyncState, SyncStatus} from '../../shared/models/sync';
 import {CompetitionApiService} from '../../shared/services/api/competition-api.service';
 import {SeasonApiService} from '../../shared/services/api/season-api.service';
 import {SyncApiService} from '../../shared/services/api/sync-api.service';
@@ -25,6 +27,9 @@ const SECTION_KEY = 'sync';
 const POLL_MS = 5000;
 /** Tope de la espera: pasado esto, una ejecución «en curso» se da por colgada. */
 const POLL_LIMIT_MS = 20 * 60 * 1000;
+
+/** Cadencias que se pueden elegir para una fuente, en minutos. */
+const INTERVALS = [2, 5, 15, 30, 60, 120, 360, 720, 1440, 10080, 43200];
 
 const STATUS_TONE: Record<SyncStatus, 'success' | 'warning' | 'danger' | 'info'> = {
   success: 'success',
@@ -48,17 +53,26 @@ const STATUS_ICON: Record<SyncStatus, string> = {
  * (minutos) la API la lanza en segundo plano y esta sección consulta el estado cada pocos
  * segundos hasta que termina.
  *
- * Arriba, el enlace con el proveedor (`app-competition-link`: buscar y enlazar, cambiar,
- * desenlazar) y un interruptor por cada tipo de dato que el proveedor sabe traer.
+ * Arriba, el enlace con cada proveedor (`app-competition-link`: buscar y enlazar, cambiar,
+ * desenlazar) y, por cada tipo de dato que sabe traer, un interruptor (exclusivo: activarlo
+ * en un proveedor lo apaga en los demás) y su cadencia. Debajo, las fuentes preferidas: qué
+ * proveedor se muestra para cada aspecto (caras, escudos, nombres).
  */
 @Component({
   selector: 'app-competition-sync-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppCardComponent, BadgeComponent, CompetitionLinkComponent, InputComponent, LoaderComponent, LocalizedDatePipe, SwitchComponent, TranslatePipe],
+  imports: [AppCardComponent, BadgeComponent, CompetitionLinkComponent, InputComponent, LoaderComponent, LocalizedDatePipe, PickerComponent, SwitchComponent, TranslatePipe],
   template: `
     @if (state(); as sync) {
       @if (data(); as competition) {
         <app-competition-link [competitionId]="competition.id" [state]="sync" [locked]="running() || polling()" (stateChange)="setState($event)"/>
+      }
+
+      @if (sync.live) {
+        <div class="live" role="status">
+          <edas-badge appearance="danger" icon="radio" label="sync.live" size="s"/>
+          <span>{{ 'sync.live-description' | translate }}</span>
+        </div>
       }
 
       @for (link of sync.links; track link.provider.code) {
@@ -76,7 +90,23 @@ const STATUS_ICON: Record<SyncStatus, string> = {
                   } @else {
                     {{ 'sync.source-off' | translate }}
                   }
+                  @if (source?.active && source?.next_run_at; as next) {
+                    · {{ 'sync.next-run' | translate }} {{ next | localizedDate: 'd MMM, HH:mm' }}
+                  }
                 </span>
+                @if (source) {
+                  <edas-picker
+                    class="source-interval"
+                    size="sm"
+                    [items]="intervalOptions(source)"
+                    [value]="source.interval_minutes"
+                    [labelTranslate]="false"
+                    [searchable]="false"
+                    [disabled]="running() || polling() || toggling() !== null"
+                    [ariaLabel]="'sync.interval' | translate"
+                    (valueChange)="setInterval(link.provider.code, type, $event)"
+                  />
+                }
                 <edas-switch
                   [checked]="source?.active ?? false"
                   [disabled]="running() || polling() || toggling() !== null"
@@ -92,6 +122,25 @@ const STATUS_ICON: Record<SyncStatus, string> = {
 
       @if (sync.providers.length === 0) {
         <edas-app-card icon="unplug" [iconSize]="48" [title]="'sync.unlinked-title' | translate" [description]="'sync.no-providers' | translate"/>
+      }
+
+      @if (sync.links.length > 0 && sync.preferences.length > 0) {
+        <edas-app-card icon="sliders-horizontal" [iconSize]="48" [title]="'sync.preferences-title' | translate" [description]="'sync.preferences-description' | translate">
+          <div class="preferences">
+            @for (preference of sync.preferences; track preference.aspect) {
+              <edas-picker
+                [label]="'sync.aspect.' + preference.aspect"
+                [items]="preferenceOptions(preference)"
+                [value]="preference.provider"
+                [labelTranslate]="false"
+                [searchable]="false"
+                [hint]="preference.read_time ? 'sync.preference-hint-read' : 'sync.preference-hint-write'"
+                [disabled]="running() || polling() || savingPreference()"
+                (valueChange)="setPreference(preference.aspect, $event)"
+              />
+            }
+          </div>
+        </edas-app-card>
       }
 
       @if (sync.sources.length > 0 || sync.runs.length > 0) {
@@ -317,6 +366,8 @@ export class CompetitionSyncSectionComponent implements OnInit {
   protected readonly polling = signal(false);
   /** Tipo de dato que se está activando o desactivando. */
   protected readonly toggling = signal<SyncDataType | null>(null);
+  protected readonly savingPreference = signal(false);
+  private readonly translate = inject(TranslateService);
   private poll: Subscription | null = null;
   /** Año de inicio de la temporada a sincronizar, como está en el campo; vacío = la actual del proveedor. */
   protected readonly seasonYear = signal('');
@@ -342,7 +393,7 @@ export class CompetitionSyncSectionComponent implements OnInit {
             this.follow(competition.id, false);
           }
         },
-        error: () => this.setState({providers: [], links: [], sources: [], runs: []}),
+        error: () => this.setState({providers: [], links: [], sources: [], runs: [], live: false, preferences: []}),
       });
 
     this.actionBar.register(SECTION_KEY, [
@@ -367,6 +418,78 @@ export class CompetitionSyncSectionComponent implements OnInit {
   }
 
   /** Activa o desactiva un tipo de dato. */
+  /** Cadencias para elegir: «Por defecto (6 h)» y las fijas. */
+  protected intervalOptions(source: SyncSource): EdasPickerOption<number | null>[] {
+    const fallback = source.default_interval !== null ? this.cadence(source.default_interval) : '—';
+
+    return [
+      {value: null, label: this.translate.instant('sync.interval-default', {every: fallback})},
+      ...INTERVALS.map((minutes) => ({value: minutes, label: this.translate.instant('sync.cadence', {every: this.cadence(minutes)})})),
+    ];
+  }
+
+  /** «2 min», «6 h», «30 días». */
+  protected cadence(minutes: number): string {
+    if (minutes % 1440 === 0) {
+      return this.translate.instant('sync.unit-days', {count: minutes / 1440});
+    }
+    if (minutes % 60 === 0) {
+      return this.translate.instant('sync.unit-hours', {count: minutes / 60});
+    }
+
+    return this.translate.instant('sync.unit-minutes', {count: minutes});
+  }
+
+  protected setInterval(provider: string, type: SyncDataType, minutes: number | null): void {
+    const competition = this.data();
+    if (!competition || this.toggling()) {
+      return;
+    }
+
+    this.toggling.set(type);
+
+    this.syncApi
+      .setSourceInterval(competition.id, provider, type, minutes)
+      .pipe(
+        finalize(() => this.toggling.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({next: (state) => this.setState(state), error: () => this.state.update((state) => (state ? {...state} : state))});
+  }
+
+  /** Proveedores que dan el aspecto, con «Automático» (el primero del defecto que lo tenga). */
+  protected preferenceOptions(preference: SourcePreference): EdasPickerOption<string | null>[] {
+    const first = preference.options.find((option) => option.code === preference.default[0]);
+
+    return [
+      {value: null, label: this.translate.instant('sync.preference-auto', {provider: first?.name ?? '—'})},
+      ...preference.options.map((option) => ({value: option.code, label: option.name})),
+    ];
+  }
+
+  protected setPreference(aspect: SourceAspect, provider: string | null): void {
+    const competition = this.data();
+    if (!competition || this.savingPreference()) {
+      return;
+    }
+
+    this.savingPreference.set(true);
+
+    this.syncApi
+      .setPreferences(competition.id, {[aspect]: provider})
+      .pipe(
+        finalize(() => this.savingPreference.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (state) => {
+          this.notifications.successKey('sync.preferences-saved');
+          this.setState(state);
+        },
+        error: () => this.state.update((state) => (state ? {...state} : state)),
+      });
+  }
+
   protected toggle(provider: string, type: SyncDataType, active: boolean): void {
     const competition = this.data();
     if (!competition || this.toggling()) {

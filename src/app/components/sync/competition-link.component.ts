@@ -17,9 +17,10 @@ import {SyncApiService} from '../../shared/services/api/sync-api.service';
 const COVERAGE_KEYS = ['standings', 'players', 'lineups', 'events', 'player_statistics'] as const;
 
 /**
- * Enlace de una competición con su proveedor (dentro de la pestaña de sincronización): con
- * qué competición del proveedor está enlazada, o el buscador para enlazarla. Cambiar el
- * enlace vuelve a abrir el buscador; desenlazar no borra nada de lo importado.
+ * Enlaces de una competición con sus proveedores (dentro de la pestaña de sincronización): con
+ * qué competición de cada uno está enlazada y, para los que aún no lo está, un botón que abre
+ * el buscador. Sin ningún enlace, el buscador del primero sale ya abierto. Cambiar un enlace
+ * vuelve a abrir el buscador; desenlazar no borra nada de lo importado.
  *
  * Cada cambio devuelve el estado completo de la sincronización (`stateChange`).
  */
@@ -49,12 +50,26 @@ const COVERAGE_KEYS = ['standings', 'players', 'lineups', 'events', 'player_stat
       }
     }
 
+    @for (provider of unlinkedProviders(); track provider.code) {
+      @if (searchProvider()?.code !== provider.code) {
+        <edas-app-card
+          icon="unplug"
+          [iconSize]="48"
+          [title]="'link.title' | translate: {provider: provider.name}"
+          [description]="'link.unlinked-description' | translate: {types: typesOf(provider)}"
+          actionLabel="link.link"
+          actionIcon="link"
+          (actionClick)="startChange(provider.code)"
+        />
+      }
+    }
+
     @if (searchProvider(); as provider) {
       <div class="ff-panel search">
         <div class="search-head">
           <div>
-            <h3 class="search-title">{{ (state().links.length > 0 ? 'link.change-title' : 'link.title') | translate: {provider: provider.name} }}</h3>
-            <p class="search-help">{{ 'link.search-help' | translate: {provider: provider.name} }}</p>
+            <h3 class="search-title">{{ (isLinked(provider) ? 'link.change-title' : 'link.title') | translate: {provider: provider.name} }}</h3>
+            <p class="search-help">{{ searchHelp(provider) }}</p>
           </div>
           @if (changing()) {
             <edas-button label="common.cancel" emphasis="flat" (clicked)="cancelChange()"/>
@@ -297,6 +312,30 @@ export class CompetitionLinkComponent {
 
     return links.length === 0 ? (providers.find((provider) => provider.searchable && provider.active) ?? null) : null;
   });
+
+  /** Proveedores en los que se puede buscar y con los que la competición aún no está enlazada. */
+  protected readonly unlinkedProviders = computed<SyncProvider[]>(() => {
+    const {providers, links} = this.state();
+
+    return providers.filter((provider) => provider.searchable && provider.active && !links.some((link) => link.provider.code === provider.code));
+  });
+
+  protected isLinked(provider: SyncProvider): boolean {
+    return this.state().links.some((link) => link.provider.code === provider.code);
+  }
+
+  /** «Valoraciones del videojuego» o «Calendario, Clasificación, Plantillas». */
+  protected typesOf(provider: SyncProvider): string {
+    return provider.types.map((type) => this.translate.instant(`enum.sync-type.${type}`)).join(', ');
+  }
+
+  /** Ayuda del buscador: la propia del proveedor (`link.search-help-ea-fc`) o la general. */
+  protected searchHelp(provider: SyncProvider): string {
+    const key = `link.search-help-${provider.code}`;
+    const own = this.translate.instant(key, {provider: provider.name});
+
+    return own !== key ? own : this.translate.instant('link.search-help', {provider: provider.name});
+  }
 
   /** «API-Football · id 140 · Spain». */
   protected describeLink(link: CompetitionLink): string {

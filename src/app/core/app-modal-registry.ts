@@ -1,5 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {ModalDefinition, ModalStackRegistry} from '@edas/ng';
+import {map} from 'rxjs';
 import {CompetitionFormSectionComponent} from '../components/competition/competition-form-section.component';
 import {SeasonFormSectionComponent} from '../components/season/season-form-section.component';
 import {SeasonCalendarSectionComponent} from '../components/season/season-calendar-section.component';
@@ -8,14 +9,21 @@ import {SeasonStandingsSectionComponent} from '../components/season/season-stand
 import {SeasonTeamsSectionComponent} from '../components/season/season-teams-section.component';
 import {CompetitionSyncSectionComponent} from '../components/sync/competition-sync-section.component';
 import {LinkFormSectionComponent} from '../components/link/link-form-section.component';
+import {PlayerCompetitionsSectionComponent} from '../components/player/player-competitions-section.component';
+import {PlayerFormSectionComponent} from '../components/player/player-form-section.component';
+import {PlayerInfoSectionComponent} from '../components/player/player-info-section.component';
+import {PlayerLinksSectionComponent} from '../components/player/player-links-section.component';
+import {PlayerRatingSectionComponent} from '../components/player/player-rating-section.component';
 import {TeamFormSectionComponent} from '../components/team/team-form-section.component';
 import {TeamSquadSectionComponent} from '../components/team/team-squad-section.component';
 import {Competition} from '../shared/models/competition';
 import {Season} from '../shared/models/season';
 import {Team} from '../shared/models/team';
 import {LinkableType, LinkEntity} from '../shared/models/link';
+import {PlayerCard} from '../shared/models/player';
 import {CompetitionApiService} from '../shared/services/api/competition-api.service';
 import {LinkApiService} from '../shared/services/api/link-api.service';
+import {PlayerApiService} from '../shared/services/api/player-api.service';
 import {SeasonApiService} from '../shared/services/api/season-api.service';
 import {TeamApiService} from '../shared/services/api/team-api.service';
 import {SessionService} from '../shared/services/session.service';
@@ -31,10 +39,12 @@ import {SessionService} from '../shared/services/session.service';
  * | `season-new` | competición | `new`                                        |
  * | `season`     | temporada   | `calendar` · `standings` · `teams` · `edit`  |
  * | `team`       | equipo      | `edit` · `squad`                             |
+ * | `player`     | `jugador-competición` | `info` · `rating` · `links` · `competitions` · `edit` |
  * | `link`       | `tipo-id`   | `edit` (enlace con los proveedores)          |
  *
  * El alta de temporada es un modal propio porque su `id` es el de la competición a la que se
- * añade, no el de una temporada.
+ * añade, no el de una temporada. El jugador se abre dentro de una competición (`12-1`: el
+ * jugador 12 en la competición 1), que es la que enseña su información general.
  */
 @Injectable({providedIn: 'root'})
 export class AppModalRegistry extends ModalStackRegistry {
@@ -43,6 +53,7 @@ export class AppModalRegistry extends ModalStackRegistry {
   private readonly seasonApi = inject(SeasonApiService);
   private readonly teamApi = inject(TeamApiService);
   private readonly linkApi = inject(LinkApiService);
+  private readonly playerApi = inject(PlayerApiService);
 
   /** Con la sesión aún sin resolver no se descarta un modal que venga en la URL. */
   override isSessionPending(): boolean {
@@ -140,6 +151,31 @@ export class AppModalRegistry extends ModalStackRegistry {
         sections: [
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: TeamFormSectionComponent, requiresId: true},
           {key: 'squad', labelI18nKey: 'team.squad', icon: 'users', component: TeamSquadSectionComponent, requiresId: true},
+        ],
+      },
+      player: {
+        modalKey: 'player',
+        titleI18nKey: 'title.player',
+        icon: 'user',
+        entityCrumb: {label: 'player'},
+        canAccess: (entry) => isAdmin() && entry.id != null,
+        entity: {
+          // `12-1`: el jugador y la competición en la que se enseña
+          load: (id: string) => {
+            const [playerId, competitionId] = id.split('-').map(Number);
+
+            return this.playerApi.get(playerId, Number.isFinite(competitionId) ? competitionId : null).pipe(
+              map((player): PlayerCard => ({...player, context_competition_id: Number.isFinite(competitionId) ? competitionId : null})),
+            );
+          },
+          label: (player: PlayerCard) => player.name,
+        },
+        sections: [
+          {key: 'info', labelI18nKey: 'player.info', icon: 'user', component: PlayerInfoSectionComponent, requiresId: true},
+          {key: 'rating', labelI18nKey: 'team.squad-rating', icon: 'gamepad-2', component: PlayerRatingSectionComponent, requiresId: true},
+          {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: PlayerLinksSectionComponent, requiresId: true},
+          {key: 'competitions', labelI18nKey: 'player.other-competitions', icon: 'trophy', component: PlayerCompetitionsSectionComponent, requiresId: true},
+          {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: PlayerFormSectionComponent, requiresId: true},
         ],
       },
       link: {
