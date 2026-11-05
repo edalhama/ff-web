@@ -9,15 +9,17 @@ import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {DialogService} from '@edas/ng/wrapper/services/dialog.service';
 import {NotificationService} from '@edas/ng/wrapper/services/notification.service';
 import {finalize} from 'rxjs';
-import {LinkEntity} from '../../shared/models/link';
+import {LinkEntity, ProviderLink} from '../../shared/models/link';
 import {LinkApiService} from '../../shared/services/api/link-api.service';
-
-type ProviderLink = LinkEntity['links'][number];
 
 /**
  * Enlace a mano de un equipo, un jugador o un estadio (modal `link`): su id en cada
  * proveedor, para que la sincronización lo actualice en vez de crear otro. Una competición
  * se enlaza desde su ficha: aquí solo se enseña y se lleva hasta allí.
+ *
+ * De cada proveedor se ve también la imagen que tiene de la entidad (escudo o cara) y, si no
+ * la escribió él, de quién viene (los de Biwenger, BeSoccer y LaLiga Fantasy llegan por JP);
+ * esos solo se enseñan, no se enlazan a mano.
  */
 @Component({
   selector: 'app-link-form-section',
@@ -36,23 +38,33 @@ type ProviderLink = LinkEntity['links'][number];
       @for (link of current.links; track link.provider.code) {
         <div class="ff-panel provider">
           <div class="provider-head">
-            <h3 class="provider-name">{{ link.provider.name }}</h3>
-            <span class="provider-meta">
-              @if (link.external_id) {
-                {{ 'link.linked-as' | translate: {id: link.external_id} }}
-                @if (link.external_name) {
-                  · «{{ link.external_name }}»
+            @if (link.image) {
+              <img class="provider-image" [src]="link.image" alt="" width="48" height="48" loading="lazy" (error)="hideImage($event)"/>
+            } @else {
+              <span class="provider-image provider-image--empty" [title]="'link.no-image' | translate"></span>
+            }
+            <div class="provider-text">
+              <h3 class="provider-name">{{ link.provider.name }}</h3>
+              <span class="provider-meta">
+                @if (link.external_id) {
+                  {{ 'link.linked-as' | translate: {id: link.external_id} }}
+                  @if (link.external_name) {
+                    · «{{ link.external_name }}»
+                  }
+                  @if (link.via; as via) {
+                    · {{ 'link.via' | translate: {provider: via.name} }}
+                  }
+                  @if (link.last_synced_at; as at) {
+                    · {{ 'link.synced' | translate }} {{ at | localizedDate: 'd MMM y, HH:mm' }}
+                  }
+                } @else {
+                  {{ 'link.not-linked' | translate }}
                 }
-                @if (link.last_synced_at; as at) {
-                  · {{ 'link.synced' | translate }} {{ at | localizedDate: 'd MMM y, HH:mm' }}
-                }
-              } @else {
-                {{ 'link.not-linked' | translate }}
-              }
-            </span>
+              </span>
+            </div>
           </div>
 
-          @if (current.manual) {
+          @if (current.manual && link.editable) {
             <div class="provider-form">
               <edas-input
                 class="provider-input"
@@ -105,8 +117,28 @@ type ProviderLink = LinkEntity['links'][number];
 
     .provider-head {
       display: flex;
+      align-items: center;
+      gap: var(--edas-space-3);
+    }
+
+    .provider-text {
+      display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
+    }
+
+    .provider-image {
+      width: 48px;
+      height: 48px;
+      flex: none;
+      object-fit: contain;
+      border-radius: var(--edas-radius-md);
+      background: rgba(var(--edas-tone-neutral-rgb), 0.14);
+    }
+
+    .provider-image--empty {
+      display: block;
     }
 
     .provider-name {
@@ -217,6 +249,11 @@ export class LinkFormSectionComponent implements OnInit {
             this.setEntity(updated);
           });
       });
+  }
+
+  /** Una URL que no carga (el proveedor ya no la sirve) no deja un icono roto. */
+  protected hideImage(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
   }
 
   protected openCompetition(entity: LinkEntity): void {

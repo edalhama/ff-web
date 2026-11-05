@@ -97,6 +97,7 @@ const STATUS_ICON: Record<SyncStatus, string> = {
                 @if (source) {
                   <edas-picker
                     class="source-interval"
+                    appearance="pill"
                     size="sm"
                     [items]="intervalOptions(source)"
                     [value]="source.interval_minutes"
@@ -228,7 +229,7 @@ const STATUS_ICON: Record<SyncStatus, string> = {
 
     .source {
       display: grid;
-      grid-template-columns: 9rem minmax(0, 1fr) auto;
+      grid-template-columns: 9rem minmax(0, 1fr) auto auto;
       align-items: center;
       gap: var(--edas-space-3);
       padding-block: 10px;
@@ -242,6 +243,12 @@ const STATUS_ICON: Record<SyncStatus, string> = {
 
     .source-date {
       color: var(--edas-muted-text-color);
+    }
+
+    .preferences {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+      gap: var(--edas-space-3);
     }
 
     .season-year {
@@ -331,12 +338,17 @@ const STATUS_ICON: Record<SyncStatus, string> = {
       }
 
       .source-date {
-        grid-column: 1;
+        grid-column: 1 / -1;
         grid-row: 2;
       }
 
+      .source-interval {
+        grid-column: 1 / -1;
+        grid-row: 3;
+      }
+
       .source edas-switch {
-        grid-row: 1 / span 2;
+        grid-row: 1;
         grid-column: 2;
       }
 

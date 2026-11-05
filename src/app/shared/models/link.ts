@@ -34,7 +34,21 @@ export interface LinkRow {
   last_synced_at: string | null;
 }
 
-/** Una entidad con su enlace con cada proveedor (sin enlace: `external_id` null). */
+/** Enlace de una entidad con un proveedor (sin enlace: `external_id` null). */
+export interface ProviderLink {
+  provider: {code: string; name: string};
+  /** Admite enlace a mano: los proveedores con sincronización. Biwenger, BeSoccer y LaLiga Fantasy solo se ven. */
+  editable: boolean;
+  external_id: string | null;
+  external_name: string | null;
+  /** Escudo o cara que ese proveedor tiene de la entidad, tal como él la sirve. */
+  image: string | null;
+  /** Quién nos dio el enlace cuando no lo escribió el propio proveedor (los de Biwenger, BeSoccer y LFM vienen de JP). */
+  via: {code: string; name: string} | null;
+  last_synced_at: string | null;
+}
+
+/** Una entidad con su enlace con cada proveedor. */
 export interface LinkEntity {
   id: number;
   type: LinkableType;
@@ -42,5 +56,5 @@ export interface LinkEntity {
   detail: string | null;
   /** Se puede enlazar a mano desde la pantalla de enlaces. */
   manual: boolean;
-  links: Array<{provider: {code: string; name: string}; external_id: string | null; external_name: string | null; last_synced_at: string | null}>;
+  links: ProviderLink[];
 }

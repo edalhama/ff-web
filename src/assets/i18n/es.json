@@ -288,7 +288,16 @@
     "squad-inactive": "Ya no está",
     "squad-count": "{{count}} jugadores",
     "squad-rating": "Valoración",
-    "squad-rating-source": "valoraciones de {{provider}} {{edition}}"
+    "squad-rating-source": "valoraciones de {{provider}} {{edition}}",
+    "secondary-color": "Color secundario",
+    "city": "Ciudad",
+    "website": "Web",
+    "twitter": "Twitter",
+    "twitter-hint": "La cuenta oficial, sin @.",
+    "field-secondary-color": "Color secundario",
+    "field-city": "Ciudad",
+    "field-website": "Web",
+    "field-twitter": "Twitter"
   },
   "player": {
     "info": "Información",
@@ -708,7 +717,9 @@
     "filter-unlinked": "Sin enlazar",
     "unlinked-description": "Sin enlazar. Trae: {{types}}.",
     "search-help-ea-fc": "Busca la liga en {{provider}} por su nombre o su país, en inglés («laliga», «spain»), o escribe su id (LaLiga es la 53). Solo están las ligas que salen en el juego.",
-    "search-help-jornada-perfecta": "Busca la competición en {{provider}} por su nombre, su país («ES») o su id (LaLiga es la 1). Solo están las competiciones activas en Jornada Perfecta."
+    "search-help-jornada-perfecta": "Busca la competición en {{provider}} por su nombre, su país («ES») o su id (LaLiga es la 1). Solo están las competiciones activas en Jornada Perfecta.",
+    "via": "vía {{provider}}",
+    "no-image": "Este proveedor no tiene imagen"
   },
   "tasks": {
     "intro": "Las sincronizaciones con los proveedores corren solas según la cadencia de cada fuente. Aquí se ve si el programador está en marcha, el estado de cada tarea y las incidencias: lo que ha fallado y alguien debe mirar. Cada incidencia nueva se avisa por email.",

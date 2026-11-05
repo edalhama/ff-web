@@ -32,6 +32,10 @@ interface General {
   code: string;
   founded_year: string;
   primary_color: string;
+  secondary_color: string;
+  city: string;
+  website: string;
+  twitter: string;
   active: boolean;
 }
 
@@ -43,6 +47,10 @@ function generalOf(team: Team): General {
     code: team.code ?? '',
     founded_year: team.founded_year != null ? String(team.founded_year) : '',
     primary_color: team.primary_color ?? '',
+    secondary_color: team.secondary_color ?? '',
+    city: team.city ?? '',
+    website: team.website ?? '',
+    twitter: team.twitter ?? '',
     active: team.active,
   };
 }
@@ -117,6 +125,41 @@ function generalOf(team: Team): General {
               [invalid]="errors.has('primary_color')"
               [errorText]="errors.errorText('primary_color')"
               (valueChange)="setGeneral('primary_color', $event)"
+            />
+
+            <edas-input-color
+              label="team.secondary-color"
+              [value]="form.secondary_color"
+              [cleaner]="true"
+              [invalid]="errors.has('secondary_color')"
+              [errorText]="errors.errorText('secondary_color')"
+              (valueChange)="setGeneral('secondary_color', $event)"
+            />
+
+            <edas-input
+              label="team.city"
+              [value]="form.city"
+              [invalid]="errors.has('city')"
+              [errorText]="errors.errorText('city')"
+              (valueChange)="setGeneral('city', $event)"
+            />
+
+            <edas-input
+              label="team.website"
+              type="url"
+              [value]="form.website"
+              [invalid]="errors.has('website')"
+              [errorText]="errors.errorText('website')"
+              (valueChange)="setGeneral('website', $event)"
+            />
+
+            <edas-input
+              label="team.twitter"
+              [value]="form.twitter"
+              hint="team.twitter-hint"
+              [invalid]="errors.has('twitter')"
+              [errorText]="errors.errorText('twitter')"
+              (valueChange)="setGeneral('twitter', $event)"
             />
 
             <edas-picker
@@ -291,6 +334,10 @@ export class TeamFormSectionComponent implements OnInit {
       code: textOrNull(general.code),
       founded_year: integerOrNull(general.founded_year) as number | null,
       primary_color: textOrNull(general.primary_color),
+      secondary_color: textOrNull(general.secondary_color),
+      city: textOrNull(general.city),
+      website: textOrNull(general.website),
+      twitter: textOrNull(general.twitter.replace(/^@/, '')),
       active: general.active,
     };
   }

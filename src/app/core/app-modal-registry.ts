@@ -15,6 +15,7 @@ import {PlayerInfoSectionComponent} from '../components/player/player-info-secti
 import {PlayerLinksSectionComponent} from '../components/player/player-links-section.component';
 import {PlayerRatingSectionComponent} from '../components/player/player-rating-section.component';
 import {TeamFormSectionComponent} from '../components/team/team-form-section.component';
+import {TeamLinksSectionComponent} from '../components/team/team-links-section.component';
 import {TeamSquadSectionComponent} from '../components/team/team-squad-section.component';
 import {Competition} from '../shared/models/competition';
 import {Season} from '../shared/models/season';
@@ -151,6 +152,7 @@ export class AppModalRegistry extends ModalStackRegistry {
         sections: [
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: TeamFormSectionComponent, requiresId: true},
           {key: 'squad', labelI18nKey: 'team.squad', icon: 'users', component: TeamSquadSectionComponent, requiresId: true},
+          {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: TeamLinksSectionComponent, requiresId: true},
         ],
       },
       player: {

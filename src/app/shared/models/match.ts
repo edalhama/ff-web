@@ -42,7 +42,12 @@ export interface FootballMatch {
   home_penalties: number | null;
   away_penalties: number | null;
   decided_by: string | null;
+  /** Nombre del árbitro principal. */
   referee: string | null;
+  /** Se juega fuera del estadio habitual del local. */
+  neutral_venue: boolean;
+  /** Designación completa, un árbitro por rol; solo cuando se carga. */
+  referees?: Array<{role: 'referee' | 'var' | 'avar' | 'avar2' | 'fourth_official'; id: number; name: string | null; short_name: string | null}>;
   locked_fields: string[];
   venue?: VenueSummary | null;
 }
