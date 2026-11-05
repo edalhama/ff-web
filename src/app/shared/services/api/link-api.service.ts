@@ -44,6 +44,13 @@ export class LinkApiService {
       );
   }
 
+  /** Vuelve a descargar las imágenes de la entidad de todos sus proveedores (ff-api/docs/ASSETS.md). */
+  refreshAssets(type: LinkableType, id: number): Observable<{entity: LinkEntity; report: {summary: string; failures: string[]}}> {
+    return this.http
+      .post<ApiResponse<{entity: LinkEntity; report: {summary: string; failures: string[]}}>>(`${this.endpoint}/${type}/${id}/assets`, {})
+      .pipe(map((response) => response.data!));
+  }
+
   unlink(type: LinkableType, id: number, provider: string): Observable<LinkEntity> {
     return this.http.delete<ApiResponse<{entity: LinkEntity}>>(`${this.endpoint}/${type}/${id}/${provider}`).pipe(
       map((response) => response.data!.entity),

@@ -227,7 +227,7 @@ Los specs de la app cubren la lógica sin interfaz: lectura de errores de la API
 | **Primer despliegue.** Los scripts y el `.htaccess` no se han probado en el VPS | [../DEPLOY.md](../DEPLOY.md) |
 | **Páginas de partido y de jugador**, y las puntuaciones | — |
 | **Copas y eliminatorias.** La parte pública solo pinta jornadas numeradas | — |
-| **Imágenes.** Logo de la competición y escudos de los equipos: la API tiene los campos; falta la subida | — |
+| **Imágenes.** Escudos, caras y logos llegan ya de la API desde nuestro almacenamiento (`crest`, `photo`, `logo`; ver `ff-api/docs/ASSETS.md`). Falta la subida a mano desde el panel | `src/app/components/team/team-crest.component.ts`, `src/app/components/link/link-form-section.component.ts` |
 | **Texto de presentación** de competiciones y equipos (`content`): se pinta como texto plano | `screens/site/` |
 | **Ficha de partido en el panel.** El calendario es de solo lectura; aún no se puede abrir ni corregir un partido | — |
 | **Enlazar una competición con su proveedor** desde el panel (hoy, por consola con `sync:link`) | — |

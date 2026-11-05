@@ -8,6 +8,7 @@ import {MatchListComponent} from '../../../components/match/match-list.component
 import {SiteErrorComponent} from '../../../components/site/site-error.component';
 import {SiteSquadComponent} from '../../../components/site/site-squad.component';
 import {SiteTimeZoneNoteComponent} from '../../../components/site/site-time-zone-note.component';
+import {TeamCrestComponent} from '../../../components/team/team-crest.component';
 import {SiteTeam, SiteTeamPage} from '../../../shared/models/site';
 import {TeamSummary} from '../../../shared/models/team';
 import {SiteClockService} from '../../../site/site-clock.service';
@@ -24,12 +25,12 @@ import {SiteNotFoundScreenComponent} from '../not-found/site-not-found-screen.co
 @Component({
   selector: 'app-site-team-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatchListComponent, RouterLink, SiteErrorComponent, SiteSquadComponent, SiteTimeZoneNoteComponent, SiteNotFoundScreenComponent, TranslatePipe],
+  imports: [MatchListComponent, RouterLink, SiteErrorComponent, SiteSquadComponent, SiteTimeZoneNoteComponent, SiteNotFoundScreenComponent, TeamCrestComponent, TranslatePipe],
   template: `
     @if (page(); as current) {
       <div class="site-page">
         <div class="site-header">
-          <h1 class="site-title">{{ current.team.name }}</h1>
+          <h1 class="site-title"><app-team-crest class="site-title__crest" [src]="current.team.crest" [size]="48"/>{{ current.team.name }}</h1>
 
           <dl class="site-facts">
             @if (current.team.country; as country) {

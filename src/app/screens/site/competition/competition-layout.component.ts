@@ -4,6 +4,7 @@ import {ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, Rou
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {filter, map, startWith} from 'rxjs';
 import {SiteErrorComponent} from '../../../components/site/site-error.component';
+import {TeamCrestComponent} from '../../../components/team/team-crest.component';
 import {SiteCompetitionContext, SiteSeasonSummary} from '../../../shared/models/site';
 import {SiteData} from '../../../site/site-data';
 import {competitionPath, CompetitionPage} from '../../../site/site-links';
@@ -22,12 +23,12 @@ const PAGES: readonly CompetitionPage[] = ['overview', 'standings', 'fixtures', 
 @Component({
   selector: 'app-competition-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, SiteErrorComponent, SiteNotFoundScreenComponent, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, SiteErrorComponent, SiteNotFoundScreenComponent, TeamCrestComponent, TranslatePipe],
   template: `
     @if (page.context(); as context) {
       <div class="site-page">
         <div class="site-header">
-          <h1 class="site-title">{{ heading() }}</h1>
+          <h1 class="site-title"><app-team-crest class="site-title__crest" [src]="context.competition.logo" [size]="48"/>{{ heading() }}</h1>
 
           <p class="site-meta">{{ meta(context) }}</p>
 

@@ -4,6 +4,7 @@ import {TranslatePipe} from '@ngx-translate/core';
 import {IconComponent} from '@edas/ng/wrapper/components/icon/icon.component';
 import {StandingRow} from '../../shared/models/standing';
 import {TeamSummary} from '../../shared/models/team';
+import {TeamCrestComponent} from '../team/team-crest.component';
 
 /**
  * Tabla de una clasificación. La franja de color de cada fila es la zona que ocupa (Champions,
@@ -16,7 +17,7 @@ import {TeamSummary} from '../../shared/models/team';
 @Component({
   selector: 'app-standings-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, RouterLink, TranslatePipe],
+  imports: [IconComponent, RouterLink, TeamCrestComponent, TranslatePipe],
   template: `
     <div class="ff-panel ff-panel--scroll" [class.compact]="compact()" data-no-section-swipe>
       <table class="ff-table">
@@ -50,11 +51,14 @@ import {TeamSummary} from '../../shared/models/team';
                 }
               </td>
               <td class="sticky team">
-                @if (linkOf(row.team); as link) {
-                  <a class="team-link" [routerLink]="link">{{ row.team.name ?? '—' }}</a>
-                } @else {
-                  {{ row.team.name ?? '—' }}
-                }
+                <span class="team-cell">
+                  <app-team-crest [src]="row.team.crest" [size]="22" [reserve]="hasCrests()"/>
+                  @if (linkOf(row.team); as link) {
+                    <a class="team-link" [routerLink]="link">{{ row.team.name ?? '—' }}</a>
+                  } @else {
+                    <span class="team-name">{{ row.team.name ?? '—' }}</span>
+                  }
+                </span>
               </td>
               <td class="end">{{ row.played }}</td>
               <td class="end">{{ row.won }}</td>
@@ -127,6 +131,21 @@ import {TeamSummary} from '../../shared/models/team';
       max-width: 14rem;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .team-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      max-width: 100%;
+    }
+
+    .team-link,
+    .team-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .team-link {
@@ -320,6 +339,9 @@ export class StandingsTableComponent {
 
   /** Columnas numéricas, en el orden de la tabla: su clave i18n es `standing.<columna>`. */
   protected readonly columns = ['played', 'won', 'drawn', 'lost', 'goals-for', 'goals-against', 'goal-difference', 'points'] as const;
+
+  /** Si algún equipo trae escudo, todos reservan su hueco para que los nombres queden alineados. */
+  protected readonly hasCrests = computed(() => this.rows().some((row) => !!row.team.crest));
 
   /** Zonas presentes en la tabla, en el orden en que aparecen; null si no hay ninguna. */
   protected readonly zones = computed<string[] | null>(() => {

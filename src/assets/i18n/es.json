@@ -719,7 +719,24 @@
     "search-help-ea-fc": "Busca la liga en {{provider}} por su nombre o su país, en inglés («laliga», «spain»), o escribe su id (LaLiga es la 53). Solo están las ligas que salen en el juego.",
     "search-help-jornada-perfecta": "Busca la competición en {{provider}} por su nombre, su país («ES») o su id (LaLiga es la 1). Solo están las competiciones activas en Jornada Perfecta.",
     "via": "vía {{provider}}",
-    "no-image": "Este proveedor no tiene imagen"
+    "no-image": "Este proveedor no tiene imagen",
+    "assets-title": "Nuestras copias de las imágenes",
+    "assets-help": "Las imágenes que ve el sitio no son las del proveedor: se descargan a nuestro almacenamiento tras cada sincronización y se repasan cada pocos días. Aquí, el estado de cada copia; el botón las vuelve a descargar ahora.",
+    "refresh-assets": "Volver a descargar",
+    "assets-refreshed": "Imágenes comprobadas: {{summary}}",
+    "assets-refreshed-with-errors": "Imágenes comprobadas con errores: {{summary}} {{errors}}",
+    "asset-available": "Descargada el {{date}}",
+    "asset-pending": "Pendiente de descargar",
+    "asset-failed": "No se ha podido descargar ({{count}} intentos): {{error}}",
+    "asset-kind": {
+      "crest": "Escudo",
+      "photo": "Cara",
+      "logo": "Logo",
+      "venue_photo": "Foto del estadio",
+      "kit_home": "Primera equipación",
+      "kit_away": "Segunda equipación",
+      "kit_third": "Tercera equipación"
+    }
   },
   "tasks": {
     "intro": "Las sincronizaciones con los proveedores corren solas según la cadencia de cada fuente. Aquí se ve si el programador está en marcha, el estado de cada tarea y las incidencias: lo que ha fallado y alguien debe mirar. Cada incidencia nueva se avisa por email.",

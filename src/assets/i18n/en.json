@@ -719,7 +719,24 @@
     "search-help-ea-fc": "Search {{provider}} for the league by name or country («laliga», «spain»), or type its id (LaLiga is 53). Only the leagues in the game are there.",
     "search-help-jornada-perfecta": "Search {{provider}} for the competition by name, country («ES») or id (LaLiga is 1). Only the competitions active in Jornada Perfecta are there.",
     "via": "via {{provider}}",
-    "no-image": "This provider has no image"
+    "no-image": "This provider has no image",
+    "assets-title": "Our copies of the images",
+    "assets-help": "The site does not show the provider's images: they are downloaded to our storage after every sync and rechecked every few days. Here, the state of each copy; the button downloads them again now.",
+    "refresh-assets": "Download again",
+    "assets-refreshed": "Images checked: {{summary}}",
+    "assets-refreshed-with-errors": "Images checked with errors: {{summary}} {{errors}}",
+    "asset-available": "Downloaded on {{date}}",
+    "asset-pending": "Not downloaded yet",
+    "asset-failed": "Could not be downloaded ({{count}} attempts): {{error}}",
+    "asset-kind": {
+      "crest": "Crest",
+      "photo": "Face",
+      "logo": "Logo",
+      "venue_photo": "Stadium photo",
+      "kit_home": "Home kit",
+      "kit_away": "Away kit",
+      "kit_third": "Third kit"
+    }
   },
   "tasks": {
     "intro": "Syncs with the providers run on their own, each source at its own cadence. Here you can see whether the scheduler is running, the state of every task and the incidents: what has failed and someone should look at. Every new incident is emailed.",

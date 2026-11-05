@@ -34,6 +34,26 @@ export interface LinkRow {
   last_synced_at: string | null;
 }
 
+export type AssetKind = 'crest' | 'photo' | 'logo' | 'venue_photo' | 'kit_home' | 'kit_away' | 'kit_third';
+
+/** Nuestra copia de una imagen del proveedor (ver ff-api/docs/ASSETS.md). */
+export interface ProviderAsset {
+  kind: AssetKind;
+  /** `available`: hay fichero y `url` es la pública; `pending`: aún no se ha intentado; `failed`: `error` dice por qué. */
+  status: 'available' | 'pending' | 'failed';
+  url: string | null;
+  source_url: string | null;
+  mime: string | null;
+  bytes: number | null;
+  width: number | null;
+  height: number | null;
+  fetched_at: string | null;
+  checked_at: string | null;
+  failed_at: string | null;
+  failures: number;
+  error: string | null;
+}
+
 /** Enlace de una entidad con un proveedor (sin enlace: `external_id` null). */
 export interface ProviderLink {
   provider: {code: string; name: string};
@@ -43,6 +63,8 @@ export interface ProviderLink {
   external_name: string | null;
   /** Escudo o cara que ese proveedor tiene de la entidad, tal como él la sirve. */
   image: string | null;
+  /** Nuestras copias de sus imágenes, con su estado. */
+  assets: ProviderAsset[];
   /** Quién nos dio el enlace cuando no lo escribió el propio proveedor (los de Biwenger, BeSoccer y LFM vienen de JP). */
   via: {code: string; name: string} | null;
   last_synced_at: string | null;

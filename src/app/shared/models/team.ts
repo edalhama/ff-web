@@ -9,6 +9,8 @@ export interface TeamSummary {
   short_name: string | null;
   /** Abreviatura: `RMA`. */
   code: string | null;
+  /** Escudo en nuestro almacenamiento, según las fuentes preferidas de la competición desde la que se mira. Solo lo da la parte pública. */
+  crest?: string | null;
 }
 
 export interface VenueSummary {

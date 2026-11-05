@@ -5,6 +5,7 @@ import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {map} from 'rxjs';
 import {SiteErrorComponent} from '../../../components/site/site-error.component';
+import {TeamCrestComponent} from '../../../components/team/team-crest.component';
 import {SiteHomeCompetition} from '../../../shared/models/site';
 import {dataOf, SiteData} from '../../../site/site-data';
 import {competitionPath, homePath, SiteLanguage} from '../../../site/site-links';
@@ -15,7 +16,7 @@ import {SiteSeoService} from '../../../site/site-seo.service';
 @Component({
   selector: 'app-site-home-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SiteErrorComponent, TranslatePipe],
+  imports: [RouterLink, SiteErrorComponent, TeamCrestComponent, TranslatePipe],
   template: `
     <div class="site-page">
       <div class="site-hero">
@@ -32,7 +33,7 @@ import {SiteSeoService} from '../../../site/site-seo.service';
               @for (competition of list; track competition.id) {
                 <li>
                   <a class="site-card" [routerLink]="link(competition)">
-                    <span class="site-card__title">{{ competition.name }}</span>
+                    <span class="site-card__title"><app-team-crest class="site-card__crest" [src]="competition.logo" [size]="28"/>{{ competition.name }}</span>
                     <span class="site-card__meta">
                       {{ meta(competition) }}
                     </span>

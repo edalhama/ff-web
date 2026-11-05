@@ -52,6 +52,8 @@ export interface SiteCompetitionSummary {
   type: string;
   gender: string;
   country: SiteCountry | null;
+  /** Logo en nuestro almacenamiento (el subido a mano o el de un proveedor). */
+  logo: string | null;
 }
 
 export interface SiteCompetition extends SiteCompetitionSummary {

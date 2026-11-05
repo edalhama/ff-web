@@ -32,12 +32,13 @@ function place(venue: SiteVenue): SchemaNode {
   };
 }
 
-function teamReference(lang: SiteLanguage, team: {name: string | null; slug?: string | null}): SchemaNode {
+function teamReference(lang: SiteLanguage, team: {name: string | null; slug?: string | null; crest?: string | null}): SchemaNode {
   return {
     '@type': 'SportsTeam',
     name: team.name,
     sport: SPORT,
     ...(team.slug ? {url: url(teamPath(lang, team.slug))} : {}),
+    ...(team.crest ? {logo: team.crest} : {}),
   };
 }
 
@@ -51,6 +52,7 @@ export function competitionSchema(lang: SiteLanguage, competition: SiteCompetiti
     name: competition.name,
     sport: SPORT,
     url: page,
+    ...(competition.logo ? {logo: competition.logo} : {}),
     ...(competition.country ? {areaServed: {'@type': 'Country', name: competition.country.name, identifier: competition.country.code}} : {}),
   };
 }
@@ -96,6 +98,7 @@ export function teamSchema(
     ...(team.short_name && team.short_name !== team.name ? {alternateName: team.short_name} : {}),
     sport: SPORT,
     url: page,
+    ...(team.crest ? {logo: team.crest, image: team.crest} : {}),
     ...(team.founded_year ? {foundingDate: String(team.founded_year)} : {}),
     ...(team.venue ? {location: place(team.venue)} : {}),
     ...(team.country ? {areaServed: {'@type': 'Country', name: team.country.name, identifier: team.country.code}} : {}),

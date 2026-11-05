@@ -4,6 +4,7 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {map} from 'rxjs';
 import {SiteErrorComponent} from '../../../components/site/site-error.component';
+import {TeamCrestComponent} from '../../../components/team/team-crest.component';
 import {SiteSeasonTeam} from '../../../shared/models/site';
 import {SiteData} from '../../../site/site-data';
 import {itemListSchema} from '../../../site/site-schema';
@@ -15,7 +16,7 @@ import {injectCompetitionPage} from './competition-page';
   selector: 'app-competition-teams',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {class: 'site-stack'},
-  imports: [RouterLink, SiteErrorComponent, TranslatePipe],
+  imports: [RouterLink, SiteErrorComponent, TeamCrestComponent, TranslatePipe],
   template: `
     @if (teams(); as list) {
       @if (list.length > 0) {
@@ -24,12 +25,12 @@ import {injectCompetitionPage} from './competition-page';
             <li>
               @if (page.teamLink(team); as link) {
                 <a class="site-card" [routerLink]="link">
-                  <span class="site-card__title">{{ team.name }}</span>
+                  <span class="site-card__title"><app-team-crest class="site-card__crest" [src]="team.crest" [size]="28"/>{{ team.name }}</span>
                   <span class="site-card__meta">{{ venue(team) }}</span>
                 </a>
               } @else {
                 <span class="site-card">
-                  <span class="site-card__title">{{ team.name }}</span>
+                  <span class="site-card__title"><app-team-crest class="site-card__crest" [src]="team.crest" [size]="28"/>{{ team.name }}</span>
                   <span class="site-card__meta">{{ venue(team) }}</span>
                 </span>
               }

@@ -6,6 +6,7 @@ import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {formatZoned, LONG_DAY_FORMAT, SHORT_DAY_FORMAT, TIME_FORMAT, zonedDayKey} from '../../shared/dates/zoned-dates';
 import {MatchPeriod, MatchStatus} from '../../shared/models/match';
 import {TeamSummary} from '../../shared/models/team';
+import {TeamCrestComponent} from '../team/team-crest.component';
 
 /** Lo que la lista necesita de un partido: lo cumplen el del panel y el de la parte pública. */
 export interface MatchListItem {
@@ -52,7 +53,7 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
 @Component({
   selector: 'app-match-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, RouterLink, TranslatePipe],
+  imports: [NgTemplateOutlet, RouterLink, TeamCrestComponent, TranslatePipe],
   template: `
     @for (day of days(); track day.key) {
       <div class="day">
@@ -102,10 +103,12 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
     <ng-template #teamName let-team>
       @if (linkOf(team); as link) {
         <a class="team-link" [routerLink]="link">
+          <app-team-crest class="crest" [src]="team?.crest" [size]="22" [reserve]="hasCrests()"/>
           <span class="team-full">{{ team?.name ?? '—' }}</span>
           <span class="team-short">{{ team?.short_name ?? team?.code ?? team?.name ?? '—' }}</span>
         </a>
       } @else {
+        <app-team-crest class="crest" [src]="team?.crest" [size]="22" [reserve]="hasCrests()"/>
         <span class="team-full">{{ team?.name ?? '—' }}</span>
         <span class="team-short">{{ team?.short_name ?? team?.code ?? team?.name ?? '—' }}</span>
       }
@@ -179,9 +182,37 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
       text-align: end;
     }
 
+    /* El escudo va pegado al nombre, por el lado del marcador: a la derecha en el local */
+    .crest {
+      margin-inline-start: 0.5em;
+    }
+
+    .team:not(.team--home) .crest {
+      order: -1;
+      margin-inline: 0 0.5em;
+    }
+
     .team-link {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
       color: inherit;
       text-decoration: none;
+    }
+
+    .team-link .team-full,
+    .team-link .team-short {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team:not(.team--home) .team-link .crest {
+      order: 0;
+    }
+
+    .team--home .team-link .crest {
+      order: 1;
     }
 
     .team-link:hover {
@@ -281,6 +312,9 @@ export class MatchListComponent {
   public readonly teamLink = input<((team: TeamSummary) => string | null) | null>(null);
   /** En las filas sin distintivo de estado, muestra la competición y la jornada. */
   public readonly showCompetition = input(false);
+
+  /** Si algún equipo trae escudo, todos reservan su hueco para que las columnas sigan alineadas. */
+  protected readonly hasCrests = computed(() => this.matches().some((match) => match.home_team?.crest || match.away_team?.crest));
 
   private readonly translate = inject(TranslateService);
   private readonly locale = inject(LocaleService);
