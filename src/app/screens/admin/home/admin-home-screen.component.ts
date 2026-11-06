@@ -32,6 +32,27 @@ import { SessionService } from '../../../shared/services/session.service';
           [interactive]="true"
           routerLink="/admin/teams"
         />
+        <edas-app-card
+          icon="users"
+          [title]="'title.players' | translate"
+          [description]="'admin.players-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/players"
+        />
+        <edas-app-card
+          icon="map-pin"
+          [title]="'title.venues' | translate"
+          [description]="'admin.venues-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/venues"
+        />
+        <edas-app-card
+          icon="flag"
+          [title]="'title.referees' | translate"
+          [description]="'admin.referees-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/referees"
+        />
       </div>
 
       @if (session.user(); as user) {

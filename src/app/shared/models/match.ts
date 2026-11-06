@@ -1,3 +1,4 @@
+import {RefereeRole} from './referee';
 import {SeasonStatus} from './season';
 import {TeamSummary, VenueSummary} from './team';
 
@@ -47,7 +48,7 @@ export interface FootballMatch {
   /** Se juega fuera del estadio habitual del local. */
   neutral_venue: boolean;
   /** Designación completa, un árbitro por rol; solo cuando se carga. */
-  referees?: Array<{role: 'referee' | 'var' | 'avar' | 'avar2' | 'fourth_official'; id: number; name: string | null; short_name: string | null}>;
+  referees?: Array<{role: RefereeRole; id: number; name: string | null; short_name: string | null}>;
   locked_fields: string[];
   venue?: VenueSummary | null;
 }

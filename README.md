@@ -81,6 +81,9 @@ Lo reutilizable entre proyectos va a `edas-ng` / `edas-layout`; aquí solo vive 
 | `/admin/home` | Inicio: secciones, cuenta y preferencias | Admin |
 | `/admin/competitions` | Listado de competiciones | Admin |
 | `/admin/teams` | Listado de equipos | Admin |
+| `/admin/players` | Jugadores de una competición | Admin |
+| `/admin/venues` | Listado de estadios | Admin |
+| `/admin/referees` | Listado de árbitros, con sus designaciones | Admin |
 | `/admin/links` | Enlaces con los proveedores | Admin |
 | `/admin/tasks` | Tareas programadas e incidencias | Admin |
 | `/admin/cache` | Caché de las páginas públicas | Admin |

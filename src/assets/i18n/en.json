@@ -14,6 +14,10 @@
     "profile": "Profile",
     "players": "Players",
     "player": "Player",
+    "venues": "Stadiums",
+    "venue": "Stadium",
+    "referees": "Referees",
+    "referee": "Referee",
     "tasks": "Tasks"
   },
   "auth": {
@@ -42,7 +46,10 @@
   },
   "admin": {
     "competitions-description": "And their seasons",
-    "teams-description": "Names, colours and details"
+    "teams-description": "Names, colours and details",
+    "players-description": "Squads and profiles",
+    "venues-description": "Capacity, surface and pitch size",
+    "referees-description": "And their appointments"
   },
   "common": {
     "status": "Status",
@@ -220,6 +227,25 @@
     "sync-trigger": {
       "schedule": "scheduled",
       "manual": "manual"
+    },
+    "surface": {
+      "natural": "Natural grass",
+      "artificial": "Artificial turf",
+      "hybrid": "Hybrid grass"
+    },
+    "referee-role": {
+      "referee": "Referee",
+      "var": "VAR",
+      "avar": "AVAR",
+      "avar2": "AVAR 2",
+      "fourth_official": "Fourth official"
+    },
+    "referee-role-short": {
+      "referee": "Ref.",
+      "var": "VAR",
+      "avar": "AVAR",
+      "avar2": "AVAR 2",
+      "fourth_official": "4th"
     }
   },
   "lang": {
@@ -297,7 +323,8 @@
     "field-secondary-color": "Secondary colour",
     "field-city": "City",
     "field-website": "Website",
-    "field-twitter": "Twitter"
+    "field-twitter": "Twitter",
+    "open-venue": "Open the stadium"
   },
   "player": {
     "info": "Overview",
@@ -416,6 +443,62 @@
     "names-from-providers": "Name in each provider:",
     "use-this-name": "Use this name"
   },
+  "venue": {
+    "city": "City",
+    "country": "Country",
+    "address": "Address",
+    "capacity": "Capacity",
+    "opened": "Opened",
+    "surface": "Surface",
+    "pitch-length": "Pitch length",
+    "pitch-width": "Pitch width",
+    "metres": "In metres.",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "coordinate-hint": "Decimal, with a dot: 41.380896",
+    "matches": "Matches",
+    "section-general": "General details",
+    "section-pitch": "Pitch",
+    "section-location": "Location",
+    "teams-title": "Teams",
+    "teams-description": "Play their home matches here",
+    "no-teams": "No team has it as its home ground.",
+    "filter-all-surfaces": "All surfaces",
+    "updated": "Stadium updated.",
+    "field-name": "Name",
+    "field-city": "City",
+    "field-country-id": "Country",
+    "field-address": "Address",
+    "field-capacity": "Capacity",
+    "field-opened-year": "Opened",
+    "field-surface": "Surface",
+    "field-pitch-length": "Pitch length",
+    "field-pitch-width": "Pitch width",
+    "field-latitude": "Latitude",
+    "field-longitude": "Longitude",
+    "field-image": "Photo",
+    "field-image-version": "Photo"
+  },
+  "referee": {
+    "name": "Name",
+    "short-name": "Short name",
+    "short-name-hint": "How they are known: \"Gil Manzano\".",
+    "birth-date": "Born",
+    "birth-place": "Birthplace",
+    "country": "Country",
+    "age": "Age",
+    "matches": "Matches",
+    "matches-help": "Has officiated {{count}} matches, in any role. The latest ones are shown here.",
+    "no-matches-title": "No matches",
+    "no-matches": "Not yet appointed to any match.",
+    "section-general": "General details",
+    "updated": "Referee updated.",
+    "field-name": "Name",
+    "field-short-name": "Short name",
+    "field-birth-date": "Born",
+    "field-birth-place": "Birthplace",
+    "field-country-id": "Country"
+  },
   "match": {
     "calendar": "Fixtures",
     "round": "Matchday",
@@ -427,7 +510,8 @@
     "undated": "No date",
     "empty-round": "This matchday has no matches.",
     "empty-title": "No fixtures yet",
-    "round-short": "MD{{number}}"
+    "round-short": "MD{{number}}",
+    "neutral-venue": "Neutral venue"
   },
   "standing": {
     "title": "Standings",
@@ -699,7 +783,8 @@
       "competition": "Competitions",
       "team": "Teams",
       "player": "Players",
-      "venue": "Stadiums"
+      "venue": "Stadiums",
+      "referee": "Referees"
     },
     "missing": "{{count}} not linked with {{provider}}",
     "all-linked": "All linked with {{provider}}",
@@ -708,7 +793,7 @@
     "data": "Data brought",
     "last-sync": "Last sync",
     "no-competitions": "There are no competitions yet.",
-    "entities-title": "Teams, players, stadiums and competitions",
+    "entities-title": "Teams, players, stadiums, referees and competitions",
     "entities-help": "Filter by the ones not linked to review them. Open one to link it with its id at the provider.",
     "filter-type": "Type",
     "filter-status": "Link",
@@ -785,7 +870,6 @@
     "filter-failing": "Failing",
     "filter-active": "Active",
     "filter-inactive": "Inactive",
-    "search": "Search competition, provider or type",
     "competition": "Competition",
     "type": "Data",
     "provider": "Provider",
@@ -800,8 +884,6 @@
     "run-done": "Sync done.",
     "status-inactive": "Inactive",
     "status-pending": "Never run",
-    "no-tasks": "There are no tasks: link a competition with a provider.",
-    "no-matches": "No task matches.",
     "runs-title": "Latest runs",
     "when": "When",
     "result": "Result",

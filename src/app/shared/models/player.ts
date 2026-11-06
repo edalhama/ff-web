@@ -113,7 +113,8 @@ export interface PlayerMembershipState {
 export interface PlayerRow extends PlayerMembershipState {
   /** Id de la ficha. */
   id: number;
-  player: PlayerProfile;
+  /** Con su cara según las fuentes preferidas de la competición del listado. */
+  player: PlayerProfile & {photo: string | null};
   team: TeamSummary;
 }
 

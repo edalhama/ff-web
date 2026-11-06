@@ -14,19 +14,28 @@ import {PlayerFormSectionComponent} from '../components/player/player-form-secti
 import {PlayerInfoSectionComponent} from '../components/player/player-info-section.component';
 import {PlayerLinksSectionComponent} from '../components/player/player-links-section.component';
 import {PlayerRatingSectionComponent} from '../components/player/player-rating-section.component';
+import {RefereeFormSectionComponent} from '../components/referee/referee-form-section.component';
+import {RefereeLinksSectionComponent} from '../components/referee/referee-links-section.component';
+import {RefereeMatchesSectionComponent} from '../components/referee/referee-matches-section.component';
 import {TeamFormSectionComponent} from '../components/team/team-form-section.component';
 import {TeamLinksSectionComponent} from '../components/team/team-links-section.component';
 import {TeamSquadSectionComponent} from '../components/team/team-squad-section.component';
+import {VenueFormSectionComponent} from '../components/venue/venue-form-section.component';
+import {VenueLinksSectionComponent} from '../components/venue/venue-links-section.component';
 import {Competition} from '../shared/models/competition';
 import {Season} from '../shared/models/season';
 import {Team} from '../shared/models/team';
 import {LinkableType, LinkEntity} from '../shared/models/link';
 import {PlayerCard} from '../shared/models/player';
+import {Referee} from '../shared/models/referee';
+import {Venue} from '../shared/models/venue';
 import {CompetitionApiService} from '../shared/services/api/competition-api.service';
 import {LinkApiService} from '../shared/services/api/link-api.service';
 import {PlayerApiService} from '../shared/services/api/player-api.service';
+import {RefereeApiService} from '../shared/services/api/referee-api.service';
 import {SeasonApiService} from '../shared/services/api/season-api.service';
 import {TeamApiService} from '../shared/services/api/team-api.service';
+import {VenueApiService} from '../shared/services/api/venue-api.service';
 import {SessionService} from '../shared/services/session.service';
 
 /**
@@ -39,8 +48,10 @@ import {SessionService} from '../shared/services/session.service';
  * | `competition`| competición | `new` · `edit` · `seasons` · `sync`          |
  * | `season-new` | competición | `new`                                        |
  * | `season`     | temporada   | `calendar` · `standings` · `teams` · `edit`  |
- * | `team`       | equipo      | `edit` · `squad`                             |
+ * | `team`       | equipo      | `edit` · `squad` · `links`                   |
  * | `player`     | `jugador-competición` | `info` · `rating` · `links` · `competitions` · `edit` |
+ * | `venue`      | estadio     | `edit` · `links`                             |
+ * | `referee`    | árbitro     | `edit` · `matches` · `links`                 |
  * | `link`       | `tipo-id`   | `edit` (enlace con los proveedores)          |
  *
  * El alta de temporada es un modal propio porque su `id` es el de la competición a la que se
@@ -55,6 +66,8 @@ export class AppModalRegistry extends ModalStackRegistry {
   private readonly teamApi = inject(TeamApiService);
   private readonly linkApi = inject(LinkApiService);
   private readonly playerApi = inject(PlayerApiService);
+  private readonly venueApi = inject(VenueApiService);
+  private readonly refereeApi = inject(RefereeApiService);
 
   /** Con la sesión aún sin resolver no se descarta un modal que venga en la URL. */
   override isSessionPending(): boolean {
@@ -178,6 +191,37 @@ export class AppModalRegistry extends ModalStackRegistry {
           {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: PlayerLinksSectionComponent, requiresId: true},
           {key: 'competitions', labelI18nKey: 'player.other-competitions', icon: 'trophy', component: PlayerCompetitionsSectionComponent, requiresId: true},
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: PlayerFormSectionComponent, requiresId: true},
+        ],
+      },
+      venue: {
+        modalKey: 'venue',
+        titleI18nKey: 'title.venue',
+        icon: 'map-pin',
+        entityCrumb: {label: 'venue'},
+        canAccess: (entry) => isAdmin() && entry.id != null,
+        entity: {
+          load: (id: string) => this.venueApi.get(Number(id)),
+          label: (venue: Venue) => venue.name,
+        },
+        sections: [
+          {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: VenueFormSectionComponent, requiresId: true},
+          {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: VenueLinksSectionComponent, requiresId: true},
+        ],
+      },
+      referee: {
+        modalKey: 'referee',
+        titleI18nKey: 'title.referee',
+        icon: 'flag',
+        entityCrumb: {label: 'referee'},
+        canAccess: (entry) => isAdmin() && entry.id != null,
+        entity: {
+          load: (id: string) => this.refereeApi.get(Number(id)),
+          label: (referee: Referee) => referee.name,
+        },
+        sections: [
+          {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: RefereeFormSectionComponent, requiresId: true},
+          {key: 'matches', labelI18nKey: 'referee.matches', icon: 'calendar-days', component: RefereeMatchesSectionComponent, requiresId: true},
+          {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: RefereeLinksSectionComponent, requiresId: true},
         ],
       },
       link: {

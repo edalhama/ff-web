@@ -1,19 +1,31 @@
-import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {GlobalActionBarService} from '@edas/ng/components/layout/action-bar/global-action-bar.service';
+import {ListFilter} from '@edas/ng/components/layout/list/list-filters';
+import {EdasListMemoryOptions} from '@edas/ng/components/layout/list/list-memory';
+import {EdasListColumn} from '@edas/ng/components/layout/list/list-view';
+import {ListComponent} from '@edas/ng/components/layout/list/list.component';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {ButtonComponent} from '@edas/ng/wrapper/components/button/button.component';
 import {InputComponent} from '@edas/ng/wrapper/components/input/input.component';
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
-import {PickerComponent} from '@edas/ng/wrapper/components/picker/picker.component';
-import {EdasPickerOption} from '@edas/ng/wrapper/components/picker/picker.types';
 import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {DialogService} from '@edas/ng/wrapper/services/dialog.service';
 import {NotificationService} from '@edas/ng/wrapper/services/notification.service';
 import {finalize} from 'rxjs';
+import {
+  TASK_STATUS_ICON,
+  TASK_STATUS_TONE,
+  TaskActionsCellComponent,
+  TaskCadenceCellComponent,
+  TaskCompetitionCellComponent,
+  TaskLastRunCellComponent,
+  TaskNextRunCellComponent,
+  TaskStatusCellComponent,
+} from '../../../components/task/task-cells.component';
 import {Incident, Task, TasksState, TaskStatus} from '../../../shared/models/tasks';
 import {SyncApiService} from '../../../shared/services/api/sync-api.service';
 import {TasksApiService} from '../../../shared/services/api/tasks-api.service';
@@ -21,25 +33,23 @@ import {SessionService} from '../../../shared/services/session.service';
 
 type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
-const STATUS_TONE: Record<TaskStatus, Tone> = {
-  success: 'success',
-  partial: 'warning',
-  failed: 'danger',
-  running: 'info',
-  inactive: 'neutral',
-  pending: 'neutral',
-};
+/** Filtro de estado de la tabla de tareas (viaja como `status` a `memoryListPage`). */
+const TASK_FILTERS: readonly ListFilter[] = [
+  {
+    key: 'status',
+    label: 'common.status',
+    defaultValue: null,
+    options: [
+      {value: null, label: 'tasks.filter-all'},
+      {value: 'failing', label: 'tasks.filter-failing'},
+      {value: 'active', label: 'tasks.filter-active'},
+      {value: 'inactive', label: 'tasks.filter-inactive'},
+    ],
+  },
+];
 
-const STATUS_ICON: Record<TaskStatus, string> = {
-  success: 'check-circle',
-  partial: 'triangle-alert',
-  failed: 'x-circle',
-  running: 'loader-circle',
-  inactive: 'pause',
-  pending: 'clock',
-};
-
-type TaskFilter = 'all' | 'failing' | 'active' | 'inactive';
+/** Para ordenar por estado: lo que falla, arriba. */
+const STATUS_ORDER: Record<TaskStatus, number> = {failed: 0, partial: 1, running: 2, pending: 3, success: 4, inactive: 5};
 
 /**
  * Gestión de tareas: si corre el programador, cada tarea de sincronización (una fuente de
@@ -53,7 +63,7 @@ type TaskFilter = 'all' | 'failing' | 'active' | 'inactive';
 @Component({
   selector: 'app-tasks-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppCardComponent, BadgeComponent, ButtonComponent, InputComponent, LoaderComponent, LocalizedDatePipe, PickerComponent, TranslatePipe],
+  imports: [AppCardComponent, BadgeComponent, ButtonComponent, InputComponent, ListComponent, LoaderComponent, LocalizedDatePipe, TranslatePipe],
   template: `
     @if (state(); as tasks) {
       <p class="intro">{{ 'tasks.intro' | translate }}</p>
@@ -231,101 +241,18 @@ type TaskFilter = 'all' | 'failing' | 'active' | 'inactive';
       </div>
 
       <div class="block">
-        <div class="block-head">
-          <h2 class="block-title">{{ 'tasks.tasks-title' | translate }}</h2>
-          <div class="filters">
-            <edas-picker
-              class="filter"
-              size="sm"
-              [items]="filterOptions"
-              [value]="filter()"
-              [clearable]="false"
-              (valueChange)="filter.set($event ?? 'all')"
-            />
-            <edas-input
-              class="search"
-              size="sm"
-              iconStart="search"
-              placeholder="tasks.search"
-              [cleaner]="true"
-              [value]="search()"
-              (valueChange)="search.set($event ?? '')"
-            />
-          </div>
-        </div>
-
-        @if (visibleTasks(); as list) {
-          @if (list.length > 0) {
-            <div class="ff-panel ff-panel--scroll">
-              <table class="ff-table">
-                <thead>
-                  <tr>
-                    <th scope="col">{{ 'tasks.competition' | translate }}</th>
-                    <th scope="col">{{ 'tasks.type' | translate }}</th>
-                    <th scope="col">{{ 'tasks.provider' | translate }}</th>
-                    <th scope="col">{{ 'common.status' | translate }}</th>
-                    <th scope="col">{{ 'tasks.cadence' | translate }}</th>
-                    <th scope="col">{{ 'tasks.last-run' | translate }}</th>
-                    <th scope="col">{{ 'tasks.next-run' | translate }}</th>
-                    <th scope="col"><span class="visually-hidden">{{ 'tasks.actions' | translate }}</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (task of list; track task.id) {
-                    <tr [class.row--muted]="!task.active">
-                      <td>
-                        <a class="link" href="" (click)="openSync(task.competition.id); $event.preventDefault()">{{ task.competition.name }}</a>
-                        @if (task.live) {
-                          <edas-badge class="inline-badge" appearance="danger" icon="radio" label="sync.live" size="s"/>
-                        }
-                      </td>
-                      <td>{{ 'enum.sync-type.' + task.data_type | translate }}</td>
-                      <td>{{ task.provider.name }}</td>
-                      <td>
-                        <edas-badge [appearance]="tone(task.status)" [icon]="icon(task.status)" [label]="statusLabel(task.status)" size="s"/>
-                      </td>
-                      <td class="nowrap">
-                        {{ cadence(task) }}
-                        @if (task.interval_minutes !== null) {
-                          <span class="muted" [title]="'tasks.custom-cadence' | translate">*</span>
-                        }
-                      </td>
-                      <td class="nowrap">
-                        @if (task.last_run; as run) {
-                          <span [title]="run.message ?? ''">{{ run.finished_at | localizedDate: 'd MMM, HH:mm' }}</span>
-                        } @else {
-                          —
-                        }
-                      </td>
-                      <td class="nowrap">{{ task.next_run_at ? (task.next_run_at | localizedDate: 'd MMM, HH:mm') : '—' }}</td>
-                      <td class="end actions">
-                        <edas-button
-                          icon="play"
-                          appearance="flat"
-                          size="xs"
-                          [iconOnly]="true"
-                          [ariaLabel]="'tasks.run-now' | translate"
-                          [disabled]="busy() || !task.active || task.status === 'running'"
-                          (clicked)="run(task)"
-                        />
-                        <edas-button
-                          icon="settings-2"
-                          appearance="flat"
-                          size="xs"
-                          [iconOnly]="true"
-                          [ariaLabel]="'tasks.open-sync' | translate"
-                          (clicked)="openSync(task.competition.id)"
-                        />
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          } @else {
-            <p class="empty">{{ (tasks.tasks.length === 0 ? 'tasks.no-tasks' : 'tasks.no-matches') | translate }}</p>
-          }
-        }
+        <h2 class="block-title">{{ 'tasks.tasks-title' | translate }}</h2>
+        <edas-list
+          [component]="taskCard"
+          [items]="tasks.tasks"
+          [itemsOptions]="taskListOptions"
+          [filters]="taskFilters"
+          [columns]="taskColumns"
+          viewMode="table"
+          orderBy=""
+          filtersStorageKey="tasks"
+          (rowClick)="openSync($event.competition.id)"
+        />
       </div>
 
       <div class="block">
@@ -475,29 +402,17 @@ type TaskFilter = 'all' | 'failing' | 'active' | 'inactive';
       gap: var(--edas-space-3);
     }
 
-    .filters,
     .test-email {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--edas-space-2);
-    }
-
-    .test-email {
       align-items: flex-end;
+      gap: var(--edas-space-2);
       margin-top: auto;
     }
 
     .test-email-input {
       flex: 1;
       min-width: 12rem;
-    }
-
-    .filter {
-      width: min(12rem, 100%);
-    }
-
-    .search {
-      width: min(18rem, 100%);
     }
 
     .incident {
@@ -548,10 +463,6 @@ type TaskFilter = 'all' | 'failing' | 'active' | 'inactive';
       color: inherit;
     }
 
-    .inline-badge {
-      margin-left: var(--edas-space-2);
-    }
-
     .nowrap {
       white-space: nowrap;
     }
@@ -561,25 +472,10 @@ type TaskFilter = 'all' | 'failing' | 'active' | 'inactive';
       white-space: normal;
     }
 
-    .actions {
-      white-space: nowrap;
-    }
-
-    .row--muted {
-      color: var(--edas-muted-text-color);
-    }
-
     .empty {
       color: var(--edas-muted-text-color);
     }
 
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
   `],
 })
 export class TasksScreenComponent implements OnInit {
@@ -598,34 +494,49 @@ export class TasksScreenComponent implements OnInit {
   protected readonly failed = signal(false);
   protected readonly busy = signal(false);
   protected readonly showResolved = signal(false);
-  protected readonly filter = signal<TaskFilter>('all');
-  protected readonly search = signal('');
   /** A quién mandar el correo de prueba: por defecto, a quien mira. */
   protected readonly testEmail = signal(this.session.user()?.email ?? '');
 
-  protected readonly filterOptions: readonly EdasPickerOption<TaskFilter>[] = [
-    {value: 'all', label: 'tasks.filter-all'},
-    {value: 'failing', label: 'tasks.filter-failing'},
-    {value: 'active', label: 'tasks.filter-active'},
-    {value: 'inactive', label: 'tasks.filter-inactive'},
+  /** Exigida por `edas-list`; con la vista fija en tabla no se pinta. */
+  protected readonly taskCard = TaskCompetitionCellComponent;
+  protected readonly taskFilters = TASK_FILTERS;
+
+  protected readonly taskColumns: readonly EdasListColumn<Task>[] = [
+    {key: 'competition', label: 'tasks.competition', sortable: true, sticky: true, cell: TaskCompetitionCellComponent},
+    {key: 'data_type', label: 'tasks.type', sortable: true, value: (task) => this.translate.instant('enum.sync-type.' + task.data_type)},
+    {key: 'provider', label: 'tasks.provider', sortable: true, value: (task) => task.provider.name},
+    {key: 'status', label: 'common.status', sortable: true, cell: TaskStatusCellComponent},
+    {key: 'cadence', label: 'tasks.cadence', sortable: true, cell: TaskCadenceCellComponent, hideOn: 'mobile'},
+    {key: 'last_run', label: 'tasks.last-run', sortable: true, cell: TaskLastRunCellComponent},
+    {key: 'next_run', label: 'tasks.next-run', sortable: true, cell: TaskNextRunCellComponent},
+    {
+      key: 'actions',
+      label: 'tasks.actions',
+      align: 'end',
+      cell: TaskActionsCellComponent,
+      inputs: {busy: this.busy, run: (task: Task) => this.run(task), openSync: (task: Task) => this.openSync(task.competition.id)},
+    },
   ];
 
-  protected readonly visibleTasks = computed(() => {
-    const tasks = this.state()?.tasks ?? [];
-    const filter = this.filter();
-    const term = this.search().trim().toLowerCase();
-
-    return tasks.filter((task) => {
-      const byFilter =
-        filter === 'all' ||
-        (filter === 'failing' && (task.status === 'failed' || task.status === 'partial')) ||
-        (filter === 'active' && task.active) ||
-        (filter === 'inactive' && !task.active);
-      const text = `${task.competition.name} ${task.provider.name} ${this.translate.instant('enum.sync-type.' + task.data_type)}`.toLowerCase();
-
-      return byFilter && (term === '' || text.includes(term));
-    });
-  });
+  /** Buscador, filtro y orden de la tabla, en memoria: el estado llega entero. */
+  protected readonly taskListOptions: EdasListMemoryOptions<Task> = {
+    search: (task) => `${task.competition.name} ${task.provider.name} ${this.translate.instant('enum.sync-type.' + task.data_type)}`,
+    filters: {
+      status: (task, value) =>
+        (value === 'failing' && (task.status === 'failed' || task.status === 'partial')) ||
+        (value === 'active' && task.active) ||
+        (value === 'inactive' && !task.active),
+    },
+    sort: {
+      competition: (task) => task.competition.name,
+      data_type: (task) => this.translate.instant('enum.sync-type.' + task.data_type),
+      provider: (task) => task.provider.name,
+      status: (task) => STATUS_ORDER[task.status],
+      cadence: (task) => task.interval,
+      last_run: (task) => task.last_run?.finished_at,
+      next_run: (task) => task.next_run_at,
+    },
+  };
 
   constructor() {
     this.actionBar.setActions([{id: 'refresh-tasks', labelKey: 'tasks.refresh', icon: 'refresh-cw', onClick: () => this.load()}]);
@@ -730,15 +641,11 @@ export class TasksScreenComponent implements OnInit {
   }
 
   protected tone(status: TaskStatus): Tone {
-    return STATUS_TONE[status];
+    return TASK_STATUS_TONE[status];
   }
 
   protected icon(status: TaskStatus): string {
-    return STATUS_ICON[status];
-  }
-
-  protected statusLabel(status: TaskStatus): string {
-    return status === 'inactive' || status === 'pending' ? `tasks.status-${status}` : `enum.sync-status.${status}`;
+    return TASK_STATUS_ICON[status];
   }
 
   protected schedulerTone(state: TasksState): Tone {
@@ -751,27 +658,5 @@ export class TasksScreenComponent implements OnInit {
     }
 
     return state.scheduler.last_tick_at ? 'tasks.scheduler-stalled' : 'tasks.scheduler-never-short';
-  }
-
-  /** «6 h», «2 min (directo)»… la cadencia que aplica ahora; «—» si no está activa. */
-  protected cadence(task: Task): string {
-    if (task.interval === null) {
-      return '—';
-    }
-
-    const text = this.minutes(task.interval);
-
-    return task.live && task.live_interval !== null && task.interval === task.live_interval ? `${text} · ${this.translate.instant('sync.live')}` : text;
-  }
-
-  private minutes(minutes: number): string {
-    if (minutes < 60) {
-      return `${minutes} min`;
-    }
-    if (minutes < 1440) {
-      return `${Math.round(minutes / 60)} h`;
-    }
-
-    return `${Math.round(minutes / 1440)} d`;
   }
 }

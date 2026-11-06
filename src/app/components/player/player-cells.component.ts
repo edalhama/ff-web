@@ -4,23 +4,46 @@ import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component'
 import {PlayerMembershipState, PlayerRow} from '../../shared/models/player';
 import {playerStatusTone} from '../../shared/players/squad';
 
-/** Celda de nombre de la tabla de jugadores: el deportivo y, debajo, el completo. */
+/** Celda de nombre de la tabla de jugadores: su cara, el deportivo y, debajo, el completo. */
 @Component({
   selector: 'app-player-name-cell',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (data(); as row) {
-      <span class="name">{{ row.player.name }}</span>
-      @if (row.player.full_name && row.player.full_name !== row.player.name) {
-        <span class="full-name">{{ row.player.full_name }}</span>
+      @if (row.player.photo) {
+        <img class="photo" [src]="row.player.photo" alt="" width="32" height="32" loading="lazy" (error)="hideImage($event)"/>
+      } @else {
+        <span class="photo"></span>
       }
+      <span class="names">
+        <span class="name">{{ row.player.name }}</span>
+        @if (row.player.full_name && row.player.full_name !== row.player.name) {
+          <span class="full-name">{{ row.player.full_name }}</span>
+        }
+      </span>
     }
   `,
   styles: [`
     :host {
       display: flex;
+      align-items: center;
+      gap: var(--edas-space-2);
+      max-width: 20rem;
+    }
+
+    .photo {
+      width: 32px;
+      height: 32px;
+      flex: none;
+      object-fit: cover;
+      border-radius: 50%;
+      background: rgba(var(--edas-tone-neutral-rgb), 0.14);
+    }
+
+    .names {
+      display: flex;
       flex-direction: column;
-      max-width: 18rem;
+      min-width: 0;
     }
 
     .name {
@@ -39,6 +62,11 @@ import {playerStatusTone} from '../../shared/players/squad';
 })
 export class PlayerNameCellComponent {
   public readonly data = input<PlayerRow>();
+
+  /** Imagen que no carga: se deja el hueco (el círculo de fondo) en vez del icono roto. */
+  protected hideImage(event: Event): void {
+    (event.target as HTMLImageElement).removeAttribute('src');
+  }
 }
 
 /** Celda de posición: la de la temporada. */

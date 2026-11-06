@@ -14,8 +14,8 @@ import {MatchListComponent} from '../match/match-list.component';
 
 /**
  * Calendario de una temporada (sección `calendar` del modal `season`): se elige una jornada y
- * se ven sus partidos, agrupados por día y con la hora de quien mira. Se abre por la jornada
- * en curso.
+ * se ven sus partidos, agrupados por día y con la hora de quien mira, cada uno con su estadio
+ * y su designación arbitral. Se abre por la jornada en curso.
  *
  * Es de solo lectura: horarios y resultados llegan por la sincronización.
  */
@@ -56,7 +56,7 @@ import {MatchListComponent} from '../match/match-list.component';
 
         @if (matches(); as roundMatches) {
           @if (roundMatches.length > 0) {
-            <app-match-list [matches]="roundMatches"/>
+            <app-match-list [matches]="roundMatches" [showDetails]="true"/>
           } @else {
             <p class="empty">{{ 'match.empty-round' | translate }}</p>
           }

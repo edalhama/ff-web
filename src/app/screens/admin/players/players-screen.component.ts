@@ -25,13 +25,12 @@ function isDefaultCompetition(competition: Competition): boolean {
 
 /** Columnas de la vista de tabla. Las ordenables están en la lista blanca de la API. */
 const PLAYER_COLUMNS: readonly EdasListColumn<PlayerRow>[] = [
-  {key: 'shirt_number', label: 'team.squad-number', sortable: true, align: 'end', value: (row) => row.shirt_number ?? '—', width: '4rem'},
   {key: 'name', label: 'team.squad-player', sortable: true, sticky: true, cell: PlayerNameCellComponent},
-  {key: 'team', label: 'player.team', value: (row) => row.team.name ?? '—'},
-  {key: 'position', label: 'team.squad-position', cell: PlayerPositionCellComponent},
-  {key: 'country', label: 'team.squad-country', value: (row) => row.player.country?.name ?? '—', hideOn: 'mobile'},
+  {key: 'team', label: 'player.team', sortable: true, value: (row) => row.team.name ?? '—'},
+  {key: 'position', label: 'team.squad-position', sortable: true, cell: PlayerPositionCellComponent},
+  {key: 'country', label: 'team.squad-country', sortable: true, value: (row) => row.player.country?.name ?? '—', hideOn: 'mobile'},
   {key: 'birth_date', label: 'player.birth-date', sortable: true, format: 'date', value: (row) => row.player.birth_date, hideOn: 'mobile'},
-  {key: 'status', label: 'team.squad-status', cell: PlayerStatusCellComponent},
+  {key: 'status', label: 'team.squad-status', sortable: true, cell: PlayerStatusCellComponent},
 ];
 
 /**

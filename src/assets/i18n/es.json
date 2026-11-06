@@ -14,6 +14,10 @@
     "profile": "Perfil",
     "players": "Jugadores",
     "player": "Jugador",
+    "venues": "Estadios",
+    "venue": "Estadio",
+    "referees": "Árbitros",
+    "referee": "Árbitro",
     "tasks": "Tareas"
   },
   "auth": {
@@ -42,7 +46,10 @@
   },
   "admin": {
     "competitions-description": "Y sus temporadas",
-    "teams-description": "Nombres, colores y datos"
+    "teams-description": "Nombres, colores y datos",
+    "players-description": "Plantillas y fichas",
+    "venues-description": "Aforo, superficie y medidas",
+    "referees-description": "Y sus designaciones"
   },
   "common": {
     "status": "Estado",
@@ -220,6 +227,25 @@
     "sync-trigger": {
       "schedule": "programada",
       "manual": "manual"
+    },
+    "surface": {
+      "natural": "Césped natural",
+      "artificial": "Césped artificial",
+      "hybrid": "Césped híbrido"
+    },
+    "referee-role": {
+      "referee": "Árbitro principal",
+      "var": "VAR",
+      "avar": "AVAR",
+      "avar2": "AVAR 2",
+      "fourth_official": "Cuarto árbitro"
+    },
+    "referee-role-short": {
+      "referee": "Árbitro",
+      "var": "VAR",
+      "avar": "AVAR",
+      "avar2": "AVAR 2",
+      "fourth_official": "4.º"
     }
   },
   "lang": {
@@ -297,7 +323,8 @@
     "field-secondary-color": "Color secundario",
     "field-city": "Ciudad",
     "field-website": "Web",
-    "field-twitter": "Twitter"
+    "field-twitter": "Twitter",
+    "open-venue": "Ver el estadio"
   },
   "player": {
     "info": "Información",
@@ -416,6 +443,62 @@
     "names-from-providers": "Nombre en cada proveedor:",
     "use-this-name": "Usar este nombre"
   },
+  "venue": {
+    "city": "Ciudad",
+    "country": "País",
+    "address": "Dirección",
+    "capacity": "Aforo",
+    "opened": "Inauguración",
+    "surface": "Superficie",
+    "pitch-length": "Largo del campo",
+    "pitch-width": "Ancho del campo",
+    "metres": "En metros.",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "coordinate-hint": "Decimal, con punto: 41.380896",
+    "matches": "Partidos",
+    "section-general": "Datos generales",
+    "section-pitch": "Terreno de juego",
+    "section-location": "Ubicación",
+    "teams-title": "Equipos",
+    "teams-description": "Juegan aquí sus partidos como local",
+    "no-teams": "Ningún equipo lo tiene como estadio habitual.",
+    "filter-all-surfaces": "Todas las superficies",
+    "updated": "Estadio actualizado.",
+    "field-name": "Nombre",
+    "field-city": "Ciudad",
+    "field-country-id": "País",
+    "field-address": "Dirección",
+    "field-capacity": "Aforo",
+    "field-opened-year": "Inauguración",
+    "field-surface": "Superficie",
+    "field-pitch-length": "Largo del campo",
+    "field-pitch-width": "Ancho del campo",
+    "field-latitude": "Latitud",
+    "field-longitude": "Longitud",
+    "field-image": "Foto",
+    "field-image-version": "Foto"
+  },
+  "referee": {
+    "name": "Nombre",
+    "short-name": "Nombre corto",
+    "short-name-hint": "Como se le conoce: «Gil Manzano».",
+    "birth-date": "Nacimiento",
+    "birth-place": "Lugar de nacimiento",
+    "country": "País",
+    "age": "Edad",
+    "matches": "Partidos",
+    "matches-help": "Ha arbitrado {{count}} partidos, en cualquier rol. Aquí, los últimos.",
+    "no-matches-title": "Sin partidos",
+    "no-matches": "Todavía no aparece en la designación de ningún partido.",
+    "section-general": "Datos generales",
+    "updated": "Árbitro actualizado.",
+    "field-name": "Nombre",
+    "field-short-name": "Nombre corto",
+    "field-birth-date": "Nacimiento",
+    "field-birth-place": "Lugar de nacimiento",
+    "field-country-id": "País"
+  },
   "match": {
     "calendar": "Calendario",
     "round": "Jornada",
@@ -427,7 +510,8 @@
     "undated": "Sin fecha",
     "empty-round": "Esta jornada no tiene partidos.",
     "empty-title": "Sin calendario todavía",
-    "round-short": "J{{number}}"
+    "round-short": "J{{number}}",
+    "neutral-venue": "Campo neutral"
   },
   "standing": {
     "title": "Clasificación",
@@ -699,7 +783,8 @@
       "competition": "Competiciones",
       "team": "Equipos",
       "player": "Jugadores",
-      "venue": "Estadios"
+      "venue": "Estadios",
+      "referee": "Árbitros"
     },
     "missing": "{{count}} sin enlazar con {{provider}}",
     "all-linked": "Todo enlazado con {{provider}}",
@@ -708,7 +793,7 @@
     "data": "Datos que se traen",
     "last-sync": "Última sincronización",
     "no-competitions": "Todavía no hay competiciones.",
-    "entities-title": "Equipos, jugadores, estadios y competiciones",
+    "entities-title": "Equipos, jugadores, estadios, árbitros y competiciones",
     "entities-help": "Filtra por los que están sin enlazar para revisarlos. Al abrir uno puedes enlazarlo con su id en el proveedor.",
     "filter-type": "Tipo",
     "filter-status": "Enlace",
@@ -785,7 +870,6 @@
     "filter-failing": "Con fallo",
     "filter-active": "Activas",
     "filter-inactive": "Inactivas",
-    "search": "Buscar competición, proveedor o tipo",
     "competition": "Competición",
     "type": "Dato",
     "provider": "Proveedor",
@@ -800,8 +884,6 @@
     "run-done": "Sincronización hecha.",
     "status-inactive": "Inactiva",
     "status-pending": "Sin ejecutar",
-    "no-tasks": "No hay tareas: enlaza una competición con un proveedor.",
-    "no-matches": "Ninguna tarea coincide.",
     "runs-title": "Últimas ejecuciones",
     "when": "Cuándo",
     "result": "Resultado",

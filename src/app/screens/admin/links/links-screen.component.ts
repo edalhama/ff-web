@@ -16,7 +16,7 @@ import {LinkApiService} from '../../../shared/services/api/link-api.service';
 import {SeasonApiService} from '../../../shared/services/api/season-api.service';
 
 /** Tipos del listado, en el orden de su filtro. */
-const LIST_TYPES: readonly LinkableType[] = ['team', 'player', 'venue', 'competition'];
+const LIST_TYPES: readonly LinkableType[] = ['team', 'player', 'venue', 'referee', 'competition'];
 
 /** Filtros del listado: qué tipo de entidad y si está enlazada. */
 const LINK_FILTERS: readonly ListFilter[] = [
@@ -48,7 +48,7 @@ const LINK_COLUMNS: readonly EdasListColumn<LinkRow>[] = [
 /**
  * Enlaces con los proveedores: cuánto de lo nuestro está enlazado con cada uno, cómo está
  * cada competición (con qué id y qué datos se traen) y el listado de equipos, jugadores,
- * estadios y competiciones, enlazados o no, para enlazarlos a mano.
+ * estadios, árbitros y competiciones, enlazados o no, para enlazarlos a mano.
  *
  * La sincronización enlaza sola lo que importa. Lo que sale aquí sin enlazar es lo creado a
  * mano o lo que el proveedor dejó de traer: si existe en el proveedor, conviene enlazarlo

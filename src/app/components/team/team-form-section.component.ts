@@ -4,6 +4,7 @@ import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {ModalStackActionBarService} from '@edas/ng/navigation/modal-stack/modal-stack-action-bar.service';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
+import {ButtonComponent} from '@edas/ng/wrapper/components/button/button.component';
 import {InputColorComponent} from '@edas/ng/wrapper/components/input-color/input-color.component';
 import {InputComponent} from '@edas/ng/wrapper/components/input/input.component';
 import {PickerComponent} from '@edas/ng/wrapper/components/picker/picker.component';
@@ -68,6 +69,7 @@ function generalOf(team: Team): General {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppCardComponent,
+    ButtonComponent,
     InputColorComponent,
     InputComponent,
     LockedFieldsComponent,
@@ -208,6 +210,9 @@ function generalOf(team: Team): General {
 
         <edas-app-card icon="database" [iconSize]="48" [title]="'team.source-title' | translate" [description]="'team.source-description' | translate">
           <edas-property-list [items]="sourceProperties()"/>
+          @if (team.venue; as venue) {
+            <edas-button appCardActions appearance="neutral" size="sm" icon="map-pin" label="team.open-venue" (clicked)="openVenue(venue.id)"/>
+          }
         </edas-app-card>
       </div>
       }
@@ -319,6 +324,11 @@ export class TeamFormSectionComponent implements OnInit {
   protected setUnlock(fields: string[]): void {
     this.unlock.set(fields);
     this.actionBar.refresh();
+  }
+
+  /** La ficha del estadio, encima de la del equipo. */
+  protected openVenue(id: number): void {
+    this.stack.push({modalKey: 'venue', section: 'edit', id: String(id)});
   }
 
   private canSave(): boolean {

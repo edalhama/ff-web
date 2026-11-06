@@ -2,7 +2,9 @@ import {NgTemplateOutlet} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
+import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {LocaleService} from '@edas/ng/shared/services/locale.service';
+import {IconComponent} from '@edas/ng/wrapper/components/icon/icon.component';
 import {formatZoned, LONG_DAY_FORMAT, SHORT_DAY_FORMAT, TIME_FORMAT, zonedDayKey} from '../../shared/dates/zoned-dates';
 import {MatchPeriod, MatchStatus} from '../../shared/models/match';
 import {TeamSummary} from '../../shared/models/team';
@@ -23,6 +25,10 @@ export interface MatchListItem {
   /** Competición y jornada, para las listas que mezclan varias. */
   competition?: {name: string | null; short_name: string | null};
   round?: number | null;
+  /** Estadio y designación, para la línea de detalles del panel (`showDetails`); la parte pública no da el id. */
+  venue?: {id?: number; name: string} | null;
+  neutral_venue?: boolean;
+  referees?: Array<{role: string; id: number; name: string | null; short_name: string | null}>;
 }
 
 /** Partidos de un mismo día. */
@@ -48,12 +54,13 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
  *   varias jornadas (los últimos de un equipo).
  *
  * Las horas se pintan en `timeZone`; sin ella, en la del dispositivo. Con `teamLink`, el
- * nombre de cada equipo enlaza a donde diga.
+ * nombre de cada equipo enlaza a donde diga. Con `showDetails`, cada partido lleva debajo su
+ * estadio (y si es campo neutral) y su árbitro principal, que abren sus fichas del panel.
  */
 @Component({
   selector: 'app-match-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, RouterLink, TeamCrestComponent, TranslatePipe],
+  imports: [IconComponent, NgTemplateOutlet, RouterLink, TeamCrestComponent, TranslatePipe],
   template: `
     @for (day of days(); track day.key) {
       <div class="day">
@@ -94,6 +101,36 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
                   <span class="context">{{ context(match) }}</span>
                 }
               </span>
+
+              @if (showDetails() && (match.venue || mainReferee(match))) {
+                <span class="details">
+                  @if (match.venue; as venue) {
+                    @if (venue.id; as venueId) {
+                      <button type="button" class="detail detail--link" (click)="openVenue(venueId)">
+                        <Icon icon="map-pin" size="xs"/>
+                        {{ venue.name }}
+                      </button>
+                    } @else {
+                      <span class="detail">
+                        <Icon icon="map-pin" size="xs"/>
+                        {{ venue.name }}
+                      </span>
+                    }
+                    @if (match.neutral_venue) {
+                      <span class="chip chip--warning">{{ 'match.neutral-venue' | translate }}</span>
+                    }
+                  }
+                  @if (mainReferee(match); as referee) {
+                    <button type="button" class="detail detail--link" (click)="openReferee(referee.id)">
+                      <Icon icon="flag" size="xs"/>
+                      {{ referee.name }}
+                    </button>
+                    @if (otherReferees(match); as others) {
+                      <span class="detail detail--muted">{{ others }}</span>
+                    }
+                  }
+                </span>
+              }
             </div>
           }
         </div>
@@ -276,6 +313,42 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
       --chip-rgb: var(--edas-tone-danger-rgb);
     }
 
+    /* Estadio y árbitro, bajo el partido */
+    .details {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--edas-space-2) var(--edas-space-3);
+      grid-column: 1 / -1;
+      font-size: 0.75rem;
+      color: var(--edas-muted-text-color);
+    }
+
+    .detail {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .detail--link {
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .detail--link:hover {
+      color: var(--edas-text-color);
+      text-decoration: underline;
+    }
+
+    .detail--muted {
+      opacity: 0.8;
+    }
+
     /* En estrecho no caben los nombres completos: nombre corto y el estado bajo el partido */
     @media (max-width: 640px) {
       .match {
@@ -312,12 +385,17 @@ export class MatchListComponent {
   public readonly teamLink = input<((team: TeamSummary) => string | null) | null>(null);
   /** En las filas sin distintivo de estado, muestra la competición y la jornada. */
   public readonly showCompetition = input(false);
+  /** Bajo cada partido, su estadio y su árbitro principal (solo en el panel). */
+  public readonly showDetails = input(false);
+  /** Texto extra junto a la competición de cada fila («VAR», en los partidos de un árbitro); null, nada. */
+  public readonly roleOf = input<((match: MatchListItem) => string | null) | null>(null);
 
   /** Si algún equipo trae escudo, todos reservan su hueco para que las columnas sigan alineadas. */
   protected readonly hasCrests = computed(() => this.matches().some((match) => match.home_team?.crest || match.away_team?.crest));
 
   private readonly translate = inject(TranslateService);
   private readonly locale = inject(LocaleService);
+  private readonly stack = inject(ModalStackService);
 
   /** Partidos agrupados por día (o en un único grupo sin título con `layout="dates"`). */
   protected readonly days = computed<MatchDay[]>(() => {
@@ -383,11 +461,35 @@ export class MatchListComponent {
     return showMinute ? `${label} · ${match.minute}'` : label;
   }
 
-  /** «LaLiga · J12». */
+  /** «LaLiga · J12», y el texto extra de `roleOf` si lo hay («LaLiga · VAR»). */
   protected context(match: MatchListItem): string {
     const name = match.competition?.short_name ?? match.competition?.name ?? '';
     const round = match.round != null ? this.translate.instant('match.round-short', {number: match.round}) : '';
 
-    return [name, round].filter(Boolean).join(' · ');
+    return [name, round, this.roleOf()?.(match)].filter(Boolean).join(' · ');
+  }
+
+  /** El árbitro principal, si la designación lo trae. */
+  protected mainReferee(match: MatchListItem): {id: number; name: string} | null {
+    const referee = match.referees?.find((each) => each.role === 'referee');
+
+    return referee?.name ? {id: referee.id, name: referee.name} : null;
+  }
+
+  /** «VAR: Hernández Hernández · 4.º: González Fuertes». */
+  protected otherReferees(match: MatchListItem): string | null {
+    const others = (match.referees ?? [])
+      .filter((each) => each.role !== 'referee' && (each.short_name || each.name))
+      .map((each) => `${this.translate.instant(`enum.referee-role-short.${each.role}`)}: ${each.short_name ?? each.name}`);
+
+    return others.length > 0 ? others.join(' · ') : null;
+  }
+
+  protected openVenue(id: number): void {
+    this.stack.push({modalKey: 'venue', section: 'edit', id: String(id)});
+  }
+
+  protected openReferee(id: number): void {
+    this.stack.push({modalKey: 'referee', section: 'edit', id: String(id)});
   }
 }

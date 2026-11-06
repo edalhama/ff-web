@@ -63,6 +63,16 @@ export const routes: Routes = [
         loadComponent: () => import('./screens/admin/players/players-screen.component').then((m) => m.PlayersScreenComponent),
         data: { titleKey: ROUTE_TITLE.players, icon: 'users' },
       },
+      {
+        path: 'venues',
+        loadComponent: () => import('./screens/admin/venues/venues-screen.component').then((m) => m.VenuesScreenComponent),
+        data: { titleKey: ROUTE_TITLE.venues, icon: 'map-pin' },
+      },
+      {
+        path: 'referees',
+        loadComponent: () => import('./screens/admin/referees/referees-screen.component').then((m) => m.RefereesScreenComponent),
+        data: { titleKey: ROUTE_TITLE.referees, icon: 'flag' },
+      },
     ],
   },
   {
