@@ -1,28 +1,58 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslatePipe} from '@ngx-translate/core';
+import {EdasListMemoryOptions} from '@edas/ng/components/layout/list/list-memory';
+import {EdasListColumn} from '@edas/ng/components/layout/list/list-view';
+import {ListComponent} from '@edas/ng/components/layout/list/list.component';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
-import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
 import {EdasTabItem, TabsComponent} from '@edas/ng/wrapper/components/tabs/tabs.component';
 import {PlayerRating, playerModalId, SquadMember, TeamSquad} from '../../shared/models/player';
 import {Team} from '../../shared/models/team';
-import {ageOn, playerStatusTone} from '../../shared/players/squad';
+import {ageOn, POSITION_ORDER} from '../../shared/players/squad';
 import {TeamApiService} from '../../shared/services/api/team-api.service';
-import {PlayerRatingBadgeComponent} from '../player/player-rating-badge.component';
+import {PlayerNameCellComponent, PlayerStatusCellComponent} from '../player/player-cells.component';
+import {TeamSquadCardComponent} from './team-squad-card.component';
+import {SquadPositionCellComponent, SquadRatingCellComponent} from './team-squad-cells.component';
+
+const memberAge = (member: SquadMember): number | null => ageOn(member.player.birth_date, new Date());
+
+/** Columnas de la vista de tabla; se ordenan en memoria con `SQUAD_LIST_OPTIONS.sort`. */
+const SQUAD_COLUMNS: readonly EdasListColumn<SquadMember>[] = [
+  {key: 'shirt_number', label: 'team.squad-number', sortable: true, align: 'end'},
+  {key: 'name', label: 'team.squad-player', sortable: true, sticky: true, cell: PlayerNameCellComponent},
+  {key: 'position', label: 'team.squad-position', sortable: true, cell: SquadPositionCellComponent},
+  {key: 'rating', label: 'team.squad-rating', sortable: true, cell: SquadRatingCellComponent},
+  {key: 'country', label: 'team.squad-country', sortable: true, value: (member) => member.player.country?.name},
+  {key: 'age', label: 'team.squad-age', sortable: true, align: 'end', value: memberAge},
+  {key: 'status', label: 'team.squad-status', cell: PlayerStatusCellComponent},
+];
+
+const SQUAD_LIST_OPTIONS: EdasListMemoryOptions<SquadMember> = {
+  perPage: 15,
+  search: (member) => `${member.player.name} ${member.player.full_name ?? ''}`,
+  sort: {
+    shirt_number: (member) => member.shirt_number,
+    name: (member) => member.player.name,
+    position: (member) => (member.position ? POSITION_ORDER.indexOf(member.position) : null),
+    rating: (member) => member.player.rating?.overall,
+    country: (member) => member.player.country?.name,
+    age: memberAge,
+  },
+};
 
 /**
  * Plantilla de un equipo (sección `squad` del modal `team`): una pestaña por temporada en la
- * que está inscrito, con dorsal, posición, valoración en el videojuego, país, edad y estado de
- * cada jugador. Es de solo lectura: llega por la sincronización de plantillas y de
- * valoraciones. Los que han dejado el equipo salen al final, atenuados. Cada fila abre la ficha
- * del jugador en esa competición.
+ * que está inscrito y, en cada una, la lista de jugadores en tarjetas o en tabla, con dorsal,
+ * posición, valoración en el videojuego, país, edad y estado. Es de solo lectura: llega por la
+ * sincronización de plantillas y de valoraciones. Los que han dejado el equipo salen al final,
+ * atenuados. Cada elemento abre la ficha del jugador en esa competición.
  */
 @Component({
   selector: 'app-team-squad-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppCardComponent, BadgeComponent, LoaderComponent, PlayerRatingBadgeComponent, TabsComponent, TranslatePipe],
+  imports: [AppCardComponent, ListComponent, LoaderComponent, TabsComponent, TranslatePipe],
   template: `
     @if (squads(); as list) {
       @if (list.length > 1) {
@@ -39,78 +69,20 @@ import {PlayerRatingBadgeComponent} from '../player/player-rating-badge.componen
             }
           </p>
 
-          <div class="ff-panel ff-panel--scroll" data-no-section-swipe>
-            <table class="ff-table">
-              <thead>
-                <tr>
-                  <th class="end" scope="col">{{ 'team.squad-number' | translate }}</th>
-                  <th class="sticky" scope="col">{{ 'team.squad-player' | translate }}</th>
-                  <th scope="col">{{ 'team.squad-position' | translate }}</th>
-                  <th scope="col">{{ 'team.squad-rating' | translate }}</th>
-                  <th scope="col">{{ 'team.squad-country' | translate }}</th>
-                  <th class="end" scope="col">{{ 'team.squad-age' | translate }}</th>
-                  <th scope="col">{{ 'team.squad-status' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (member of squad.members; track member.id) {
-                  <tr
-                    [class.gone]="!member.active"
-                    tabindex="0"
-                    (click)="openPlayer(member, squad)"
-                    (keydown.enter)="openPlayer(member, squad)"
-                  >
-                    <td class="end number">{{ member.shirt_number ?? '–' }}</td>
-                    <td class="sticky">
-                      <span class="who">
-                        @if (member.player.photo) {
-                          <img class="photo" [src]="member.player.photo" alt="" width="32" height="32" loading="lazy" (error)="hideImage($event)"/>
-                        }
-                        <span>
-                      <span class="name">{{ member.player.name }}</span>
-                      @if (member.player.full_name && member.player.full_name !== member.player.name) {
-                        <span class="full-name">{{ member.player.full_name }}</span>
-                      }
-                        </span>
-                      </span>
-                    </td>
-                    <td>
-                      {{ member.position ? ('enum.player-position.' + member.position | translate) : '—' }}
-                      @if (member.player.foot) {
-                        <span class="sub">{{ 'enum.foot.' + member.player.foot | translate }}</span>
-                      }
-                    </td>
-                    <td>
-                      @if (member.player.rating; as rating) {
-                        <span class="rating">
-                          <app-player-rating-badge [rating]="rating"/>
-                          <span class="game-position">
-                            {{ rating.position ?? '' }}
-                            @if (rating.alt_positions.length > 0) {
-                              <span class="sub">{{ rating.alt_positions.join(', ') }}</span>
-                            }
-                          </span>
-                        </span>
-                      } @else {
-                        <span class="muted">—</span>
-                      }
-                    </td>
-                    <td>{{ member.player.country?.name ?? '—' }}</td>
-                    <td class="end">{{ age(member) ?? '—' }}</td>
-                    <td>
-                      @if (!member.active) {
-                        <edas-badge appearance="neutral" label="team.squad-inactive" size="s"/>
-                      } @else if (member.status !== 'unknown') {
-                        <edas-badge [appearance]="tone(member)" [label]="'enum.player-status.' + member.status" size="s"/>
-                      } @else {
-                        <span class="muted">—</span>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <!-- orderBy vacío: sin columna elegida se respeta el orden de la API (los que se fueron, al final).
+               El @for de un solo elemento recrea la lista al cambiar de temporada, para volver a su primera página. -->
+          @for (current of [squad]; track current.season.id) {
+            <edas-list
+              [component]="card"
+              [items]="current.members"
+              [itemsOptions]="listOptions"
+              [columns]="columns"
+              [extraInputs]="{competitionId: current.competition.id}"
+              orderBy=""
+              filtersStorageKey="team-squad"
+              (rowClick)="openPlayer($event, current)"
+            />
+          }
         } @else {
           <edas-app-card icon="users" [iconSize]="48" [title]="'team.squad-empty-title' | translate" [description]="'team.squad-empty' | translate"/>
         }
@@ -135,53 +107,11 @@ import {PlayerRatingBadgeComponent} from '../player/player-rating-badge.componen
       color: var(--edas-muted-text-color);
     }
 
-    .number {
-      font-weight: 700;
-    }
-
-    .who {
-      display: flex;
-      align-items: center;
-      gap: var(--edas-space-2);
-    }
-
-    .photo {
-      width: 32px;
-      height: 32px;
-      flex: none;
-      object-fit: cover;
-      border-radius: 50%;
-      background: rgba(var(--edas-tone-neutral-rgb), 0.14);
-    }
-
-    .name {
-      display: block;
-      font-weight: 600;
-    }
-
-    .full-name,
-    .muted {
-      font-size: 0.8125rem;
-      color: var(--edas-muted-text-color);
-    }
-
-    .sub {
-      display: block;
-      font-size: 0.8125rem;
-      color: var(--edas-muted-text-color);
-    }
-
-    .rating {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--edas-space-2);
-    }
-
-    .game-position {
-      font-weight: 600;
-    }
-
-    .gone td {
+    /* Filas de los que ya no están. La tabla es de la librería y no marca filas: se reconocen
+       por su celda de estado. La columna fija atenúa su contenido, no su fondo, para seguir
+       tapando lo que pasa por debajo al desplazar. */
+    :host ::ng-deep tr:has(app-player-status-cell.gone) td:not(.sticky),
+    :host ::ng-deep tr:has(app-player-status-cell.gone) td.sticky > * {
       opacity: 0.55;
     }
   `],
@@ -224,7 +154,9 @@ export class TeamSquadSectionComponent implements OnInit {
 
   protected readonly String = String;
 
-  private readonly today = new Date();
+  protected readonly card = TeamSquadCardComponent;
+  protected readonly columns = SQUAD_COLUMNS;
+  protected readonly listOptions = SQUAD_LIST_OPTIONS;
 
   public ngOnInit(): void {
     const team = this.data();
@@ -246,21 +178,8 @@ export class TeamSquadSectionComponent implements OnInit {
     this.seasonId.set(Number(key));
   }
 
-  protected age(member: SquadMember): number | null {
-    return ageOn(member.player.birth_date, this.today);
-  }
-
-  /** Una foto que no carga deja su hueco vacío, sin el icono de imagen rota. */
-  protected hideImage(event: Event): void {
-    (event.target as HTMLImageElement).style.visibility = 'hidden';
-  }
-
-  /** Ficha del jugador, en la competición de esta plantilla. */
+  /** Fila de la tabla: lo mismo que la tarjeta, la ficha del jugador en esta competición. */
   protected openPlayer(member: SquadMember, squad: TeamSquad): void {
     this.stack.push({modalKey: 'player', section: 'info', id: playerModalId(member.player.id, squad.competition.id)});
-  }
-
-  protected tone(member: SquadMember): 'success' | 'warning' | 'danger' | 'neutral' {
-    return playerStatusTone(member.status);
   }
 }

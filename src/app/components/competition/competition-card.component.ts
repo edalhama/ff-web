@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, signal} from '@angular/core';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent, EdasAppCardStat} from '@edas/ng/wrapper/components/app-card/app-card.component';
@@ -8,8 +8,9 @@ import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {Competition, competitionIcon} from '../../shared/models/competition';
 
 /**
- * Tarjeta de competición del listado del panel: nombre, país (o «Internacional»), tipo, estado
- * y temporada actual. Toda la tarjeta abre la ficha de la competición.
+ * Tarjeta de competición del listado del panel: logo (o icono del tipo), nombre, país (o
+ * «Internacional»), tipo, estado y temporada actual. Toda la tarjeta abre la ficha de la
+ * competición.
  */
 @Component({
   selector: 'app-competition-card',
@@ -18,7 +19,7 @@ import {Competition, competitionIcon} from '../../shared/models/competition';
   template: `
     @if (data(); as competition) {
       <edas-app-card
-        [icon]="icon()"
+        [icon]="logo() ? null : icon()"
         [iconSize]="48"
         [labelTranslate]="false"
         [title]="competition.name ?? '—'"
@@ -28,6 +29,9 @@ import {Competition, competitionIcon} from '../../shared/models/competition';
         [stats]="stats()"
         (cardClick)="open()"
       >
+        @if (logo(); as url) {
+          <img appCardLeading class="logo" [src]="url" alt="" width="48" height="48" loading="lazy" (error)="failedLogo.set(url)"/>
+        }
         <div class="competition-badges">
           <edas-badge
             [appearance]="competition.active ? 'success' : 'neutral'"
@@ -51,6 +55,13 @@ import {Competition, competitionIcon} from '../../shared/models/competition';
       width: 100%;
     }
 
+    .logo {
+      width: 48px;
+      height: 48px;
+      flex: none;
+      object-fit: contain;
+    }
+
     .competition-badges {
       display: flex;
       flex-wrap: wrap;
@@ -64,6 +75,14 @@ export class CompetitionCardComponent {
   private readonly stack = inject(ModalStackService);
   private readonly translate = inject(TranslateService);
   private readonly datePipe = new LocalizedDatePipe();
+
+  protected readonly failedLogo = signal<string | null>(null);
+
+  protected readonly logo = computed(() => {
+    const url = this.data()?.logo ?? null;
+
+    return url && url !== this.failedLogo() ? url : null;
+  });
 
   protected readonly icon = computed(() => competitionIcon(this.data()?.type));
 

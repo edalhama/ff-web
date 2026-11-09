@@ -21,6 +21,16 @@ export function competitionIcon(type: CompetitionType | null | undefined): strin
   }
 }
 
+/**
+ * Competición con la que arrancan los listados la primera vez (después manda lo guardado): la
+ * de este slug, sin contar los guiones (`laliga` o `la-liga`).
+ */
+const DEFAULT_COMPETITION_SLUG = 'laliga';
+
+export function isDefaultCompetition(competition: Competition): boolean {
+  return Object.values(competition.translations).some((text) => text.slug.replace(/-/g, '') === DEFAULT_COMPETITION_SLUG);
+}
+
 /** Textos de una competición en un idioma. */
 export interface CompetitionTranslation {
   name: string;
@@ -43,6 +53,8 @@ export interface Competition {
   tier: number | null;
   image: string | null;
   image_version: number;
+  /** Logo en nuestro almacenamiento (el subido a mano o el de un proveedor). */
+  logo: string | null;
   position: number;
   active: boolean;
   /** Campos que la sincronización ya no toca. */
@@ -51,6 +63,7 @@ export interface Competition {
   translations: Record<string, CompetitionTranslation>;
   country?: Country | null;
   current_season?: Season | null;
+  seasons?: Season[];
   seasons_count?: number;
   created_at: string | null;
   updated_at: string | null;

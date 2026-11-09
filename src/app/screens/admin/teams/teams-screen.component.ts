@@ -1,15 +1,18 @@
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {ListFilter} from '@edas/ng/components/layout/list/list-filters';
+import {ChangeDetectionStrategy, Component, OnInit, computed, inject, signal} from '@angular/core';
+import {ListFilter, ListFilterValues} from '@edas/ng/components/layout/list/list-filters';
 import {EdasListColumn} from '@edas/ng/components/layout/list/list-view';
 import {EdasListParams, ListComponent} from '@edas/ng/components/layout/list/list.component';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
-import {TeamCardComponent} from '../../../components/team/team-card.component';
+import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
+import {TranslateService} from '@ngx-translate/core';
+import {TeamCardComponent, teamCompetitions} from '../../../components/team/team-card.component';
 import {TeamActiveCellComponent, TeamNameCellComponent} from '../../../components/team/team-cells.component';
-import {TEAM_TYPES} from '../../../shared/models/competition';
+import {Competition, TEAM_TYPES, isDefaultCompetition} from '../../../shared/models/competition';
 import {Team} from '../../../shared/models/team';
+import {CompetitionApiService} from '../../../shared/services/api/competition-api.service';
 import {TeamApiService} from '../../../shared/services/api/team-api.service';
 
-/** Filtros del listado. Viajan a la API con el nombre de su `key`; «todos» (`null`) no manda el parámetro. */
+/** Filtros fijos del listado. Viajan a la API con el nombre de su `key`; «todos» (`null`) no manda el parámetro. */
 const TEAM_FILTERS: readonly ListFilter[] = [
   {
     key: 'active',
@@ -35,9 +38,8 @@ const TEAM_FILTERS: readonly ListFilter[] = [
 /** Columnas de la vista de tabla. Las ordenables están en la lista blanca de la API. */
 const TEAM_COLUMNS: readonly EdasListColumn<Team>[] = [
   {key: 'name', label: 'texts.name', sortable: true, sticky: true, cell: TeamNameCellComponent},
+  {key: 'competition', label: 'player.competition', value: (team) => teamCompetitions(team) ?? '—'},
   {key: 'country', label: 'team.country', value: (team) => team.country?.name ?? '—'},
-  {key: 'venue', label: 'team.venue', value: (team) => team.venue?.name ?? '—', hideOn: 'mobile'},
-  {key: 'founded_year', label: 'team.founded', sortable: true, align: 'end', value: (team) => team.founded_year ?? '—', hideOn: 'mobile'},
   {key: 'active', label: 'common.status', cell: TeamActiveCellComponent},
   {key: 'updated_at', label: 'team.modified', format: 'date', hideOn: 'mobile'},
 ];
@@ -49,18 +51,22 @@ const TEAM_COLUMNS: readonly EdasListColumn<Team>[] = [
 @Component({
   selector: 'app-teams-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListComponent],
+  imports: [ListComponent, LoaderComponent],
   template: `
-    <edas-list
-      [component]="card"
-      [fetchData]="fetchTeams"
-      [filters]="filters"
-      [columns]="columns"
-      [reload]="teamApi.refreshList$"
-      orderBy="name"
-      filtersStorageKey="teams"
-      (rowClick)="open($event)"
-    />
+    @if (competitions()) {
+      <edas-list
+        [component]="card"
+        [fetchData]="fetchTeams"
+        [filters]="filters()"
+        [columns]="columns"
+        [reload]="teamApi.refreshList$"
+        orderBy="name"
+        filtersStorageKey="teams"
+        (rowClick)="open($event)"
+      />
+    } @else {
+      <edas-loader/>
+    }
   `,
   styles: [`
     :host {
@@ -69,15 +75,77 @@ const TEAM_COLUMNS: readonly EdasListColumn<Team>[] = [
     }
   `],
 })
-export class TeamsScreenComponent {
+export class TeamsScreenComponent implements OnInit {
   protected readonly teamApi = inject(TeamApiService);
+  private readonly competitionApi = inject(CompetitionApiService);
+  private readonly translate = inject(TranslateService);
   private readonly stack = inject(ModalStackService);
 
   protected readonly card = TeamCardComponent;
-  protected readonly filters = TEAM_FILTERS;
   protected readonly columns = TEAM_COLUMNS;
 
+  /** `null` mientras cargan las competiciones para armar los filtros iniciales. */
+  protected readonly competitions = signal<Competition[] | null>(null);
+
+  /**
+   * Filtros del listado. Arranca por defecto en «LaLiga» y en su temporada actual (o la más
+   * reciente disponible); la temporada depende de la competición elegida.
+   */
+  protected readonly filters = computed(() => {
+    const competitions = this.competitions() ?? [];
+    const fallback = competitions.find(isDefaultCompetition) ?? competitions[0];
+    this.translate.currentLang();
+
+    return (values: ListFilterValues): readonly ListFilter[] => {
+      const selectedCompetition = competitions.find((competition) => competition.id === values['competition_id']);
+      const seasons = selectedCompetition?.seasons ?? [];
+      const defaultSeason = selectedCompetition?.current_season ?? seasons[0];
+
+      return [
+        ...(competitions.length > 0
+          ? [
+              {
+                key: 'competition_id',
+                label: 'player.competition',
+                defaultValue: fallback?.id ?? null,
+                labelTranslate: false,
+                options: [
+                  {value: null, label: this.translate.instant('team.filter-all-competitions')},
+                  ...competitions.map((competition) => ({
+                    value: competition.id,
+                    label: competition.name ?? `#${competition.id}`,
+                  })),
+                ],
+              },
+            ]
+          : []),
+        ...(seasons.length > 0
+          ? [
+              {
+                key: 'season_id',
+                label: 'team.squad-season',
+                defaultValue: defaultSeason?.id ?? null,
+                labelTranslate: false,
+                options: seasons.map((season) => ({
+                  value: season.id,
+                  label: season.label,
+                })),
+              },
+            ]
+          : []),
+        ...TEAM_FILTERS,
+      ];
+    };
+  });
+
   protected readonly fetchTeams = (params: EdasListParams) => this.teamApi.list(params);
+
+  public ngOnInit(): void {
+    this.competitionApi
+      .list({perPage: 100, orderBy: 'position', order: 'ASC'})
+      .then((page) => this.competitions.set(page.data as Competition[]))
+      .catch(() => this.competitions.set([]));
+  }
 
   /** Fila de la tabla: lo mismo que la tarjeta, la ficha del equipo. */
   protected open(team: Team): void {

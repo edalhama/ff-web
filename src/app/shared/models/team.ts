@@ -58,6 +58,8 @@ export interface Team extends TeamSummary {
   translations: Record<string, TeamTranslation>;
   country?: Country | null;
   venue?: VenueSummary | null;
+  /** Competiciones en las que participa en su temporada actual. */
+  competitions?: Array<{id: number; name: string | null}>;
   /** Solo en la ficha. */
   providers?: ProviderLink[];
   created_at: string | null;

@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
-import {PlayerMembershipState, PlayerRow} from '../../shared/models/player';
+import {Player, PlayerMembershipState, PlayerRow} from '../../shared/models/player';
 import {playerStatusTone} from '../../shared/players/squad';
 
 /** Celda de nombre de la tabla de jugadores: su cara, el deportivo y, debajo, el completo. */
@@ -61,7 +61,8 @@ import {playerStatusTone} from '../../shared/players/squad';
   `],
 })
 export class PlayerNameCellComponent {
-  public readonly data = input<PlayerRow>();
+  /** Una fila del listado de jugadores o de la plantilla de un equipo. */
+  public readonly data = input<{player: Pick<Player, 'name' | 'full_name' | 'photo'>}>();
 
   /** Imagen que no carga: se deja el hueco (el círculo de fondo) en vez del icono roto. */
   protected hideImage(event: Event): void {
@@ -85,6 +86,7 @@ export class PlayerPositionCellComponent {
   selector: 'app-player-status-cell',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [BadgeComponent],
+  host: {'[class.gone]': 'data()?.active === false'},
   template: `
     @if (data(); as member) {
       @if (!member.active) {

@@ -8,20 +8,10 @@ import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.compone
 import {TranslatePipe} from '@ngx-translate/core';
 import {PlayerCardComponent} from '../../../components/player/player-card.component';
 import {PlayerNameCellComponent, PlayerPositionCellComponent, PlayerStatusCellComponent} from '../../../components/player/player-cells.component';
-import {Competition} from '../../../shared/models/competition';
+import {Competition, isDefaultCompetition} from '../../../shared/models/competition';
 import {PLAYER_LIST_STATUSES, PLAYER_POSITIONS, playerModalId, PlayerRow} from '../../../shared/models/player';
 import {CompetitionApiService} from '../../../shared/services/api/competition-api.service';
 import {PlayerApiService} from '../../../shared/services/api/player-api.service';
-
-/**
- * Competición con la que arranca el listado la primera vez (después manda lo guardado): la de
- * este slug, sin contar los guiones (`laliga` o `la-liga`). Si no está, la primera.
- */
-const DEFAULT_COMPETITION_SLUG = 'laliga';
-
-function isDefaultCompetition(competition: Competition): boolean {
-  return Object.values(competition.translations).some((text) => text.slug.replace(/-/g, '') === DEFAULT_COMPETITION_SLUG);
-}
 
 /** Columnas de la vista de tabla. Las ordenables están en la lista blanca de la API. */
 const PLAYER_COLUMNS: readonly EdasListColumn<PlayerRow>[] = [
