@@ -9,6 +9,8 @@ import {SeasonStandingsSectionComponent} from '../components/season/season-stand
 import {SeasonTeamsSectionComponent} from '../components/season/season-teams-section.component';
 import {CompetitionSyncSectionComponent} from '../components/sync/competition-sync-section.component';
 import {LinkFormSectionComponent} from '../components/link/link-form-section.component';
+import {MatchEventsSectionComponent} from '../components/match/match-events-section.component';
+import {MatchScoresSectionComponent} from '../components/match/match-scores-section.component';
 import {PlayerCompetitionsSectionComponent} from '../components/player/player-competitions-section.component';
 import {PlayerFormSectionComponent} from '../components/player/player-form-section.component';
 import {PlayerInfoSectionComponent} from '../components/player/player-info-section.component';
@@ -26,11 +28,13 @@ import {Competition} from '../shared/models/competition';
 import {Season} from '../shared/models/season';
 import {Team} from '../shared/models/team';
 import {LinkableType, LinkEntity} from '../shared/models/link';
+import {MatchDetail} from '../shared/models/match';
 import {PlayerCard} from '../shared/models/player';
 import {Referee} from '../shared/models/referee';
 import {Venue} from '../shared/models/venue';
 import {CompetitionApiService} from '../shared/services/api/competition-api.service';
 import {LinkApiService} from '../shared/services/api/link-api.service';
+import {MatchApiService} from '../shared/services/api/match-api.service';
 import {PlayerApiService} from '../shared/services/api/player-api.service';
 import {RefereeApiService} from '../shared/services/api/referee-api.service';
 import {SeasonApiService} from '../shared/services/api/season-api.service';
@@ -52,6 +56,7 @@ import {SessionService} from '../shared/services/session.service';
  * | `player`     | `jugador-competición` | `info` · `rating` · `links` · `competitions` · `edit` |
  * | `venue`      | estadio     | `edit` · `links`                             |
  * | `referee`    | árbitro     | `edit` · `matches` · `links`                 |
+ * | `match`      | partido     | `events` · `scores`                          |
  * | `link`       | `tipo-id`   | `edit` (enlace con los proveedores)          |
  *
  * El alta de temporada es un modal propio porque su `id` es el de la competición a la que se
@@ -68,6 +73,7 @@ export class AppModalRegistry extends ModalStackRegistry {
   private readonly playerApi = inject(PlayerApiService);
   private readonly venueApi = inject(VenueApiService);
   private readonly refereeApi = inject(RefereeApiService);
+  private readonly matchApi = inject(MatchApiService);
 
   /** Con la sesión aún sin resolver no se descarta un modal que venga en la URL. */
   override isSessionPending(): boolean {
@@ -222,6 +228,22 @@ export class AppModalRegistry extends ModalStackRegistry {
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: RefereeFormSectionComponent, requiresId: true},
           {key: 'matches', labelI18nKey: 'referee.matches', icon: 'calendar-days', component: RefereeMatchesSectionComponent, requiresId: true},
           {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: RefereeLinksSectionComponent, requiresId: true},
+        ],
+      },
+      match: {
+        modalKey: 'match',
+        titleI18nKey: 'title.match',
+        icon: 'goal',
+        entityCrumb: {label: 'match'},
+        canAccess: (entry) => isAdmin() && entry.id != null,
+        entity: {
+          // Una sola petición con todo: el partido, sus eventos, sus jugadores y sus notas
+          load: (id: string) => this.matchApi.get(Number(id)),
+          label: (detail: MatchDetail) => `${detail.match.home_team?.name ?? '—'} - ${detail.match.away_team?.name ?? '—'}`,
+        },
+        sections: [
+          {key: 'events', labelI18nKey: 'match.events', icon: 'list', component: MatchEventsSectionComponent, requiresId: true},
+          {key: 'scores', labelI18nKey: 'match.scores', icon: 'star', component: MatchScoresSectionComponent, requiresId: true},
         ],
       },
       link: {

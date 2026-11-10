@@ -1,11 +1,12 @@
 import {NgTemplateOutlet} from '@angular/common';
-import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, output} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {IconComponent} from '@edas/ng/wrapper/components/icon/icon.component';
 import {formatZoned, LONG_DAY_FORMAT, SHORT_DAY_FORMAT, TIME_FORMAT, zonedDayKey} from '../../shared/dates/zoned-dates';
+import {MATCH_STATUS_TONE, matchStatusLabel} from '../../shared/matches/matches';
 import {MatchPeriod, MatchStatus} from '../../shared/models/match';
 import {TeamSummary} from '../../shared/models/team';
 import {TeamCrestComponent} from '../team/team-crest.component';
@@ -38,14 +39,6 @@ interface MatchDay {
   matches: MatchListItem[];
 }
 
-/** Estados que se avisan con un distintivo. Los programados y los terminados no: se ven por la hora o el resultado. */
-const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>> = {
-  playing: 'success',
-  postponed: 'warning',
-  suspended: 'warning',
-  cancelled: 'danger',
-};
-
 /**
  * Lista de partidos: hora, local, resultado, visitante y estado.
  *
@@ -56,6 +49,11 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
  * Las horas se pintan en `timeZone`; sin ella, en la del dispositivo. Con `teamLink`, el
  * nombre de cada equipo enlaza a donde diga. Con `showDetails`, cada partido lleva debajo su
  * estadio (y si es campo neutral) y su árbitro principal, que abren sus fichas del panel.
+ *
+ * Con `interactive`, cada fila se elige con ratón y teclado y avisa por `matchClick` (en el
+ * panel, para abrir la ficha del partido). Sin él, las filas no responden: así las usa la parte
+ * pública. Los enlaces y botones de dentro de la fila (equipo, estadio, árbitro) hacen lo suyo
+ * y no eligen la fila.
  */
 @Component({
   selector: 'app-match-list',
@@ -70,7 +68,17 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
 
         <div class="ff-panel">
           @for (match of day.matches; track match.id) {
-            <div class="match" [class.match--dated]="layout() === 'dates'">
+            <div
+              class="match"
+              [class.match--dated]="layout() === 'dates'"
+              [class.match--interactive]="interactive()"
+              [attr.role]="interactive() ? 'button' : null"
+              [attr.tabindex]="interactive() ? 0 : null"
+              [attr.aria-label]="interactive() ? rowLabel(match) : null"
+              (click)="select($event, match)"
+              (keydown.enter)="selectByKey($event, match)"
+              (keydown.space)="selectByKey($event, match)"
+            >
               <span class="time" [class.time--unconfirmed]="!match.kickoff_confirmed">
                 @if (layout() === 'dates') {
                   <span class="date">{{ date(match) }}</span>
@@ -190,6 +198,22 @@ const STATUS_TONE: Partial<Record<MatchStatus, 'success' | 'warning' | 'danger'>
 
     .match:last-child {
       border-bottom: 0;
+    }
+
+    /* Filas que abren la ficha del partido (con interactive) */
+    .match--interactive {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .match--interactive:hover,
+    .match--interactive:focus-visible {
+      background: rgba(var(--edas-tone-neutral-rgb), var(--edas-soft-alpha));
+    }
+
+    .match--interactive:focus-visible {
+      outline: 2px solid rgb(var(--edas-tone-primary-rgb));
+      outline-offset: -2px;
     }
 
     .time {
@@ -389,6 +413,11 @@ export class MatchListComponent {
   public readonly showDetails = input(false);
   /** Texto extra junto a la competición de cada fila («VAR», en los partidos de un árbitro); null, nada. */
   public readonly roleOf = input<((match: MatchListItem) => string | null) | null>(null);
+  /** Filas elegibles con ratón y teclado: avisan por `matchClick`. Solo en el panel. */
+  public readonly interactive = input(false);
+
+  /** Fila elegida (solo con `interactive`). */
+  public readonly matchClick = output<MatchListItem>();
 
   /** Si algún equipo trae escudo, todos reservan su hueco para que las columnas sigan alineadas. */
   protected readonly hasCrests = computed(() => this.matches().some((match) => match.home_team?.crest || match.away_team?.crest));
@@ -446,19 +475,12 @@ export class MatchListComponent {
   }
 
   protected tone(match: MatchListItem): 'success' | 'warning' | 'danger' | null {
-    return STATUS_TONE[match.status] ?? null;
+    return MATCH_STATUS_TONE[match.status] ?? null;
   }
 
   /** «En juego · 30'», «Descanso», «Aplazado»… */
   protected statusLabel(match: MatchListItem): string {
-    if (match.status !== 'playing') {
-      return this.translate.instant(`enum.match-status.${match.status}`);
-    }
-
-    const label = this.translate.instant(match.period ? `enum.match-period.${match.period}` : 'enum.match-status.playing');
-    const showMinute = match.minute !== null && match.period !== 'half_time' && match.period !== 'penalties';
-
-    return showMinute ? `${label} · ${match.minute}'` : label;
+    return matchStatusLabel(match, (key) => this.translate.instant(key));
   }
 
   /** «LaLiga · J12», y el texto extra de `roleOf` si lo hay («LaLiga · VAR»). */
@@ -483,6 +505,30 @@ export class MatchListComponent {
       .map((each) => `${this.translate.instant(`enum.referee-role-short.${each.role}`)}: ${each.short_name ?? each.name}`);
 
     return others.length > 0 ? others.join(' · ') : null;
+  }
+
+  /** Clic en la fila. Los de un enlace o un botón de dentro (equipo, estadio, árbitro) no la eligen. */
+  protected select(event: Event, match: MatchListItem): void {
+    const control = (event.target as HTMLElement | null)?.closest('a, button');
+    const fromInside = !!control && (event.currentTarget as HTMLElement).contains(control);
+
+    if (this.interactive() && !fromInside) {
+      this.matchClick.emit(match);
+    }
+  }
+
+  /** Intro o espacio sobre la fila; los que llegan desde un botón de dentro son de ese botón. */
+  protected selectByKey(event: Event, match: MatchListItem): void {
+    if (this.interactive() && event.target === event.currentTarget) {
+      // Que el espacio no desplace la página
+      event.preventDefault();
+      this.matchClick.emit(match);
+    }
+  }
+
+  /** «Barcelona - Sevilla», para los lectores de pantalla de una fila elegible. */
+  protected rowLabel(match: MatchListItem): string {
+    return this.translate.instant('match.open', {home: match.home_team?.name ?? '—', away: match.away_team?.name ?? '—'});
   }
 
   protected openVenue(id: number): void {

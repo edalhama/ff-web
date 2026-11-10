@@ -82,6 +82,8 @@ Lo reutilizable entre proyectos va a `edas-ng` / `edas-layout`; aquí solo vive 
 | `/admin/competitions` | Listado de competiciones | Admin |
 | `/admin/teams` | Listado de equipos | Admin |
 | `/admin/players` | Jugadores de una competición | Admin |
+| `/admin/rounds` | Jornadas de una competición, con la que está en disputa | Admin |
+| `/admin/matches` | Partidos de una jornada de una competición (`?competition_id=&season_id=&round_id=` lo abre ya filtrado) | Admin |
 | `/admin/venues` | Listado de estadios | Admin |
 | `/admin/referees` | Listado de árbitros, con sus designaciones | Admin |
 | `/admin/links` | Enlaces con los proveedores | Admin |
@@ -177,11 +179,14 @@ El catálogo está en `core/app-modal-registry.ts`:
 | `season` | temporada | `calendar` · `standings` · `teams` · `edit` |
 | `team` | equipo | `edit` · `squad` |
 | `link` | `tipo-id` (`player-481`) | `edit` |
+| `match` | partido | `events` · `scores` |
 
 Qué hay en cada ficha:
 
 - **Competición:** sus datos, sus temporadas y la **sincronización** (de qué proveedor llega cada dato, lanzarla ahora y las últimas ejecuciones con lo que hizo cada una). Si el proveedor la rechaza, el aviso muestra su mensaje tal cual.
 - **Temporada:** se abre por el **calendario** (una jornada cada vez, empezando por la que está en curso, con las horas en la zona horaria de quien mira), y tiene la **clasificación** (general, local y visitante, con las zonas marcadas por color) y los **equipos** inscritos. Todo esto es de solo lectura: llega por la sincronización.
+- **Partido:** la cabecera (equipos, resultado, estado, fecha y jornada) con la **cronología** de todos sus eventos, los del local a un lado y los del visitante al otro, y las **notas**: se elige un sistema de puntuación de la competición (de entrada, el suyo por defecto) y se ve cada jugador de los dos equipos con su papel, minutos, nota, puntos y distinciones. Se abre desde el listado de partidos, el calendario de una temporada y los partidos de un árbitro. De solo lectura.
+- **Jornadas y partidos** (`/admin/rounds`, `/admin/matches`, pantallas): siempre de una competición (LaLiga la primera vez). Los filtros de temporada y jornada arrancan en «Temporada actual» y «Jornada en curso», que no mandan nada y resuelve ff-api, así que lo guardado en el dispositivo nunca se queda en una jornada pasada. Sus opciones llegan con la primera página; al cambiar de competición o de temporada, los de dentro vuelven a «la vigente». Una jornada abre sus partidos.
 - **Caché de páginas** (`/admin/cache`, no es una ficha sino una pantalla): qué páginas públicas hay guardadas, si Cloudflare está enlazado, las últimas purgas, y purgar todo, una página o lo de una competición.
 - **Equipo:** sus textos y datos. No hay alta ni baja: los equipos los crea la sincronización. Sirve sobre todo para corregir los nombres, que los proveedores dan en inglés y sin tildes. La pestaña **Plantilla** enseña los jugadores de cada temporada en la que está inscrito (dorsal, posición, país, edad y estado), también de solo lectura.
 - **Enlace con el proveedor** (pestaña Sincronización de la competición): buscar la competición en el proveedor y enlazarla, cambiar o quitar el enlace, y un interruptor por cada tipo de dato que se trae.

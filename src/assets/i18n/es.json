@@ -18,7 +18,10 @@
     "venue": "Estadio",
     "referees": "Árbitros",
     "referee": "Árbitro",
-    "tasks": "Tareas"
+    "tasks": "Tareas",
+    "rounds": "Jornadas",
+    "matches": "Partidos",
+    "match": "Partido"
   },
   "auth": {
     "login-btn": "Acceder",
@@ -49,7 +52,9 @@
     "teams-description": "Nombres, colores y datos",
     "players-description": "Plantillas y fichas",
     "venues-description": "Aforo, superficie y medidas",
-    "referees-description": "Y sus designaciones"
+    "referees-description": "Y sus designaciones",
+    "rounds-description": "Calendario y jornada en curso",
+    "matches-description": "Resultados, eventos y notas"
   },
   "common": {
     "status": "Estado",
@@ -189,6 +194,22 @@
       "second_half": "2.ª parte",
       "extra_time": "Prórroga",
       "penalties": "Penaltis"
+    },
+    "lineup-role": {
+      "starter": "Titular",
+      "bench": "Suplente",
+      "absent": "No convocado"
+    },
+    "match-event-type": {
+      "goal": "Gol",
+      "penalty_goal": "Gol de penalti",
+      "own_goal": "Gol en propia puerta",
+      "penalty_missed": "Penalti fallado",
+      "penalty_saved": "Penalti parado",
+      "yellow_card": "Tarjeta amarilla",
+      "second_yellow_card": "Segunda amarilla",
+      "red_card": "Tarjeta roja",
+      "substitution": "Cambio"
     },
     "round-type": {
       "regular": "Jornada",
@@ -512,7 +533,48 @@
     "empty-round": "Esta jornada no tiene partidos.",
     "empty-title": "Sin calendario todavía",
     "round-short": "J{{number}}",
-    "neutral-venue": "Campo neutral"
+    "neutral-venue": "Campo neutral",
+    "open": "Ver el partido {{home}} - {{away}}",
+    "events": "Eventos",
+    "scores": "Notas",
+    "season": "Temporada",
+    "kickoff": "Fecha",
+    "home": "Local",
+    "away": "Visitante",
+    "result": "Resultado",
+    "status": "Estado",
+    "venue": "Estadio",
+    "dates": "Fechas",
+    "matches": "Partidos",
+    "played": "Jugados",
+    "in-play": "En curso",
+    "filter-current-season": "Temporada actual",
+    "filter-current-season-named": "Temporada actual ({{name}})",
+    "filter-round-in-play": "Jornada en curso",
+    "filter-round-in-play-named": "Jornada en curso ({{name}})",
+    "no-competitions": "Crea una competición y sincroniza su calendario para ver sus partidos.",
+    "half-time-score": "Descanso: {{home}}-{{away}}",
+    "penalties-score": "Penaltis: {{home}}-{{away}}",
+    "no-events-title": "Sin eventos",
+    "no-events": "Los goles, tarjetas y cambios llegan al sincronizar los eventos del partido.",
+    "assist": "Asistencia: {{name}}",
+    "substitution-in": "Entra: {{name}}",
+    "substitution-out": "Sale: {{name}}",
+    "scoring-system": "Sistema de puntuación",
+    "no-scoring-systems": "La competición no tiene sistemas de puntuación: no hay notas que enseñar.",
+    "no-players-title": "Sin hoja del partido",
+    "no-players": "Los jugadores y sus notas llegan al sincronizar las alineaciones y las puntuaciones.",
+    "no-team-players": "Sin jugadores de este equipo.",
+    "role": "Papel",
+    "minutes": "Minutos",
+    "score": "Nota",
+    "points": "Puntos",
+    "badges": "Distinciones",
+    "featured": "Destacado",
+    "ideal": "Once ideal",
+    "provisional": "Provisional",
+    "captain": "Capitán",
+    "captain-short": "C"
   },
   "standing": {
     "title": "Clasificación",

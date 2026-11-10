@@ -64,6 +64,16 @@ export const routes: Routes = [
         data: { titleKey: ROUTE_TITLE.players, icon: 'users' },
       },
       {
+        path: 'rounds',
+        loadComponent: () => import('./screens/admin/rounds/rounds-screen.component').then((m) => m.RoundsScreenComponent),
+        data: { titleKey: ROUTE_TITLE.rounds, icon: 'calendar-range' },
+      },
+      {
+        path: 'matches',
+        loadComponent: () => import('./screens/admin/matches/matches-screen.component').then((m) => m.MatchesScreenComponent),
+        data: { titleKey: ROUTE_TITLE.matches, icon: 'goal' },
+      },
+      {
         path: 'venues',
         loadComponent: () => import('./screens/admin/venues/venues-screen.component').then((m) => m.VenuesScreenComponent),
         data: { titleKey: ROUTE_TITLE.venues, icon: 'map-pin' },

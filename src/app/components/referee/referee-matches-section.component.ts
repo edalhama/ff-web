@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
+import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {Referee, RefereeDesignation, RefereeRole} from '../../shared/models/referee';
 import {MatchListComponent, MatchListItem} from '../match/match-list.component';
@@ -11,7 +12,8 @@ interface DesignatedMatch extends MatchListItem {
 
 /**
  * Últimos partidos de un árbitro (sección `matches` del modal `referee`): de la más reciente
- * a la más antigua, cada uno con la competición y el rol que tuvo en él.
+ * a la más antigua, cada uno con la competición y el rol que tuvo en él. Cada partido abre
+ * su ficha.
  */
 @Component({
   selector: 'app-referee-matches-section',
@@ -21,7 +23,7 @@ interface DesignatedMatch extends MatchListItem {
     @if (matches(); as list) {
       @if (list.length > 0) {
         <p class="help">{{ 'referee.matches-help' | translate: {count: data()?.designations_count ?? list.length} }}</p>
-        <app-match-list [matches]="list" layout="dates" [showCompetition]="true" [roleOf]="roleOf"/>
+        <app-match-list [matches]="list" layout="dates" [showCompetition]="true" [roleOf]="roleOf" [interactive]="true" (matchClick)="openMatch($event)"/>
       } @else {
         <edas-app-card icon="calendar-off" [iconSize]="48" [title]="'referee.no-matches-title' | translate" [description]="'referee.no-matches' | translate"/>
       }
@@ -47,6 +49,7 @@ export class RefereeMatchesSectionComponent {
   public readonly data = input<Referee>();
 
   private readonly translate = inject(TranslateService);
+  private readonly stack = inject(ModalStackService);
 
   protected readonly matches = computed<DesignatedMatch[]>(() =>
     (this.data()?.designations ?? []).map((designation: RefereeDesignation) => ({
@@ -62,4 +65,9 @@ export class RefereeMatchesSectionComponent {
 
     return role === 'referee' ? null : this.translate.instant(`enum.referee-role.${role}`);
   };
+
+  /** Ficha del partido, con su cronología. */
+  protected openMatch(match: MatchListItem): void {
+    this.stack.push({modalKey: 'match', section: 'events', id: String(match.id)});
+  }
 }

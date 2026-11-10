@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
-import {Player, PlayerMembershipState, PlayerRow} from '../../shared/models/player';
+import {Player, PlayerMembershipState, PlayerPosition} from '../../shared/models/player';
 import {playerStatusTone} from '../../shared/players/squad';
 
 /** Celda de nombre de la tabla de jugadores: su cara, el deportivo y, debajo, el completo. */
@@ -70,7 +70,7 @@ export class PlayerNameCellComponent {
   }
 }
 
-/** Celda de posición: la de la temporada. */
+/** Celda de posición: la de la temporada (o, en la hoja de un partido, la de ese partido). */
 @Component({
   selector: 'app-player-position-cell',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,7 +78,7 @@ export class PlayerNameCellComponent {
   template: `{{ data()?.position ? ('enum.player-position.' + data()!.position | translate) : '—' }}`,
 })
 export class PlayerPositionCellComponent {
-  public readonly data = input<PlayerRow>();
+  public readonly data = input<{position: PlayerPosition | null}>();
 }
 
 /** Estado de una ficha: «ya no está» si ha dejado el equipo; si no, su estado, si se sabe. */

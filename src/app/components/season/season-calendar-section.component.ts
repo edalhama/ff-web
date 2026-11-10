@@ -1,21 +1,23 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
+import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {ButtonComponent} from '@edas/ng/wrapper/components/button/button.component';
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
 import {PickerComponent} from '@edas/ng/wrapper/components/picker/picker.component';
 import {EdasPickerOption} from '@edas/ng/wrapper/components/picker/picker.types';
 import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
+import {roundLabelKey} from '../../shared/matches/matches';
 import {FootballMatch, Round} from '../../shared/models/match';
 import {Season} from '../../shared/models/season';
 import {SeasonContentApiService} from '../../shared/services/api/season-content-api.service';
-import {MatchListComponent} from '../match/match-list.component';
+import {MatchListComponent, MatchListItem} from '../match/match-list.component';
 
 /**
  * Calendario de una temporada (sección `calendar` del modal `season`): se elige una jornada y
  * se ven sus partidos, agrupados por día y con la hora de quien mira, cada uno con su estadio
- * y su designación arbitral. Se abre por la jornada en curso.
+ * y su designación arbitral. Se abre por la jornada en curso. Cada partido abre su ficha.
  *
  * Es de solo lectura: horarios y resultados llegan por la sincronización.
  */
@@ -56,7 +58,7 @@ import {MatchListComponent} from '../match/match-list.component';
 
         @if (matches(); as roundMatches) {
           @if (roundMatches.length > 0) {
-            <app-match-list [matches]="roundMatches" [showDetails]="true"/>
+            <app-match-list [matches]="roundMatches" [showDetails]="true" [interactive]="true" (matchClick)="openMatch($event)"/>
           } @else {
             <p class="empty">{{ 'match.empty-round' | translate }}</p>
           }
@@ -107,6 +109,7 @@ export class SeasonCalendarSectionComponent implements OnInit {
 
   private readonly content = inject(SeasonContentApiService);
   private readonly translate = inject(TranslateService);
+  private readonly stack = inject(ModalStackService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly datePipe = new LocalizedDatePipe();
 
@@ -184,10 +187,15 @@ export class SeasonCalendarSectionComponent implements OnInit {
     }
   }
 
+  /** Ficha del partido, con su cronología. */
+  protected openMatch(match: MatchListItem): void {
+    this.stack.push({modalKey: 'match', section: 'events', id: String(match.id)});
+  }
+
   private roundName(round: Round): string {
-    return round.number !== null
-      ? this.translate.instant('match.round-number', {number: round.number})
-      : this.translate.instant(`enum.round-type.${round.type}`);
+    const {key, params} = roundLabelKey(round);
+
+    return this.translate.instant(key, params);
   }
 
   /** «15 ago – 17 ago», o un solo día si empieza y acaba el mismo. */

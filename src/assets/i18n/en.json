@@ -18,7 +18,10 @@
     "venue": "Stadium",
     "referees": "Referees",
     "referee": "Referee",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "rounds": "Matchdays",
+    "matches": "Matches",
+    "match": "Match"
   },
   "auth": {
     "login-btn": "Sign in",
@@ -49,7 +52,9 @@
     "teams-description": "Names, colours and details",
     "players-description": "Squads and profiles",
     "venues-description": "Capacity, surface and pitch size",
-    "referees-description": "And their appointments"
+    "referees-description": "And their appointments",
+    "rounds-description": "Fixtures and the matchday in play",
+    "matches-description": "Results, events and scores"
   },
   "common": {
     "status": "Status",
@@ -189,6 +194,22 @@
       "second_half": "2nd half",
       "extra_time": "Extra time",
       "penalties": "Penalties"
+    },
+    "lineup-role": {
+      "starter": "Starter",
+      "bench": "Substitute",
+      "absent": "Not in the squad"
+    },
+    "match-event-type": {
+      "goal": "Goal",
+      "penalty_goal": "Penalty goal",
+      "own_goal": "Own goal",
+      "penalty_missed": "Penalty missed",
+      "penalty_saved": "Penalty saved",
+      "yellow_card": "Yellow card",
+      "second_yellow_card": "Second yellow",
+      "red_card": "Red card",
+      "substitution": "Substitution"
     },
     "round-type": {
       "regular": "Matchday",
@@ -512,7 +533,48 @@
     "empty-round": "This matchday has no matches.",
     "empty-title": "No fixtures yet",
     "round-short": "MD{{number}}",
-    "neutral-venue": "Neutral venue"
+    "neutral-venue": "Neutral venue",
+    "open": "Open the match {{home}} - {{away}}",
+    "events": "Events",
+    "scores": "Scores",
+    "season": "Season",
+    "kickoff": "Date",
+    "home": "Home",
+    "away": "Away",
+    "result": "Result",
+    "status": "Status",
+    "venue": "Stadium",
+    "dates": "Dates",
+    "matches": "Matches",
+    "played": "Played",
+    "in-play": "In play",
+    "filter-current-season": "Current season",
+    "filter-current-season-named": "Current season ({{name}})",
+    "filter-round-in-play": "Matchday in play",
+    "filter-round-in-play-named": "Matchday in play ({{name}})",
+    "no-competitions": "Create a competition and sync its fixtures to see its matches.",
+    "half-time-score": "Half time: {{home}}-{{away}}",
+    "penalties-score": "Penalties: {{home}}-{{away}}",
+    "no-events-title": "No events",
+    "no-events": "Goals, cards and substitutions arrive when the match events are synced.",
+    "assist": "Assist: {{name}}",
+    "substitution-in": "On: {{name}}",
+    "substitution-out": "Off: {{name}}",
+    "scoring-system": "Scoring system",
+    "no-scoring-systems": "The competition has no scoring systems: there are no scores to show.",
+    "no-players-title": "No match sheet",
+    "no-players": "Players and their scores arrive when the line-ups and scores are synced.",
+    "no-team-players": "No players for this team.",
+    "role": "Role",
+    "minutes": "Minutes",
+    "score": "Rating",
+    "points": "Points",
+    "badges": "Awards",
+    "featured": "Featured",
+    "ideal": "Team of the week",
+    "provisional": "Provisional",
+    "captain": "Captain",
+    "captain-short": "C"
   },
   "standing": {
     "title": "Standings",

@@ -40,6 +40,20 @@ import { SessionService } from '../../../shared/services/session.service';
           routerLink="/admin/players"
         />
         <edas-app-card
+          icon="calendar-range"
+          [title]="'title.rounds' | translate"
+          [description]="'admin.rounds-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/rounds"
+        />
+        <edas-app-card
+          icon="goal"
+          [title]="'title.matches' | translate"
+          [description]="'admin.matches-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/matches"
+        />
+        <edas-app-card
           icon="map-pin"
           [title]="'title.venues' | translate"
           [description]="'admin.venues-description' | translate"
