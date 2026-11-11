@@ -179,7 +179,8 @@
       "scores": "Puntuaciones",
       "ratings": "Valoraciones del videojuego",
       "market": "Mercado",
-      "automanager": "Valoración del automanager"
+      "automanager": "Valoración del automanager",
+      "profiles": "Fichas y valor de mercado"
     },
     "sync-status": {
       "success": "Correcta",
@@ -928,6 +929,7 @@
     "unlinked-description": "Sin enlazar. Trae: {{types}}.",
     "search-help-ea-fc": "Busca la liga en {{provider}} por su nombre o su país, en inglés («laliga», «spain»), o escribe su id (LaLiga es la 53). Solo están las ligas que salen en el juego.",
     "search-help-jornada-perfecta": "Busca la competición en {{provider}} por su nombre, su país («ES») o su id (LaLiga es la 1). Solo están las competiciones activas en Jornada Perfecta.",
+    "search-help-transfermarkt": "Busca la competición en {{provider}} por su nombre («laliga», «premier») o escribe su código (LaLiga es ES1; la Premier League, GB1).",
     "via": "vía {{provider}}",
     "no-image": "Este proveedor no tiene imagen",
     "assets-title": "Nuestras copias de las imágenes",
