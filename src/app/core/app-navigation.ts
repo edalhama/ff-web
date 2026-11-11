@@ -34,6 +34,7 @@ export class AppNavigation extends EdasNavigation {
           {path: '/admin/matches', labelKey: ROUTE_TITLE.matches, icon: 'goal'},
           {path: '/admin/venues', labelKey: ROUTE_TITLE.venues, icon: 'map-pin'},
           {path: '/admin/referees', labelKey: ROUTE_TITLE.referees, icon: 'flag'},
+          {path: '/admin/tv-channels', labelKey: ROUTE_TITLE.tvChannels, icon: 'tv'},
           {path: '/admin/links', labelKey: ROUTE_TITLE.links, icon: 'link'},
           {path: '/admin/tasks', labelKey: ROUTE_TITLE.tasks, icon: 'list-checks'},
           {path: '/admin/cache', labelKey: ROUTE_TITLE.cache, icon: 'database-zap'},

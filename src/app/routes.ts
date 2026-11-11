@@ -83,6 +83,11 @@ export const routes: Routes = [
         loadComponent: () => import('./screens/admin/referees/referees-screen.component').then((m) => m.RefereesScreenComponent),
         data: { titleKey: ROUTE_TITLE.referees, icon: 'flag' },
       },
+      {
+        path: 'tv-channels',
+        loadComponent: () => import('./screens/admin/tv-channels/tv-channels-screen.component').then((m) => m.TvChannelsScreenComponent),
+        data: { titleKey: ROUTE_TITLE.tvChannels, icon: 'tv' },
+      },
     ],
   },
   {

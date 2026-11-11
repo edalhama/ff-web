@@ -5,13 +5,14 @@ import {LocaleService} from '@edas/ng/shared/services/locale.service';
 import {AppCardComponent, EdasAppCardStat} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {formatZoned, SHORT_DAY_FORMAT, TIME_FORMAT} from '../../shared/dates/zoned-dates';
 import {roundLabelKey} from '../../shared/matches/matches';
+import {tvChannelsLabel} from '../../shared/tv-channels/tv-channels';
 import {MatchRow} from '../../shared/models/match';
 import {TeamCrestComponent} from '../team/team-crest.component';
 import {MatchStatusCellComponent} from './match-cells.component';
 
 /**
  * Tarjeta de partido del listado del panel: los dos equipos con su escudo, la fecha con la
- * hora de quien mira, el resultado, la jornada, el estadio y el estado. Toda la tarjeta abre
+ * hora de quien mira, el resultado, la jornada, el estadio, los canales de TV y el estado. Toda la tarjeta abre
  * la ficha del partido.
  */
 @Component({
@@ -106,6 +107,7 @@ export class MatchCardComponent {
     const match = this.data();
     this.translate.currentLang();
     const played = match?.home_score != null;
+    const tvChannels = tvChannelsLabel(match?.tv_channels);
 
     return [
       {
@@ -114,6 +116,7 @@ export class MatchCardComponent {
         muted: !played,
       },
       {label: this.translate.instant('match.venue'), value: match?.venue?.name ?? '—', muted: !match?.venue},
+      {label: this.translate.instant('match.tv-channels'), value: tvChannels ?? '—', muted: !tvChannels},
     ];
   });
 

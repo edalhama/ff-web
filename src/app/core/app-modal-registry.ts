@@ -20,6 +20,9 @@ import {RefereeFormSectionComponent} from '../components/referee/referee-form-se
 import {RefereeLinksSectionComponent} from '../components/referee/referee-links-section.component';
 import {RefereeMatchesSectionComponent} from '../components/referee/referee-matches-section.component';
 import {TeamFormSectionComponent} from '../components/team/team-form-section.component';
+import {TvChannelFormSectionComponent} from '../components/tv-channel/tv-channel-form-section.component';
+import {TvChannelLinksSectionComponent} from '../components/tv-channel/tv-channel-links-section.component';
+import {TvChannelMatchesSectionComponent} from '../components/tv-channel/tv-channel-matches-section.component';
 import {TeamLinksSectionComponent} from '../components/team/team-links-section.component';
 import {TeamSquadSectionComponent} from '../components/team/team-squad-section.component';
 import {VenueFormSectionComponent} from '../components/venue/venue-form-section.component';
@@ -27,6 +30,7 @@ import {VenueLinksSectionComponent} from '../components/venue/venue-links-sectio
 import {Competition} from '../shared/models/competition';
 import {Season} from '../shared/models/season';
 import {Team} from '../shared/models/team';
+import {TvChannel} from '../shared/models/tv-channel';
 import {LinkableType, LinkEntity} from '../shared/models/link';
 import {MatchDetail} from '../shared/models/match';
 import {PlayerCard} from '../shared/models/player';
@@ -39,6 +43,7 @@ import {PlayerApiService} from '../shared/services/api/player-api.service';
 import {RefereeApiService} from '../shared/services/api/referee-api.service';
 import {SeasonApiService} from '../shared/services/api/season-api.service';
 import {TeamApiService} from '../shared/services/api/team-api.service';
+import {TvChannelApiService} from '../shared/services/api/tv-channel-api.service';
 import {VenueApiService} from '../shared/services/api/venue-api.service';
 import {SessionService} from '../shared/services/session.service';
 
@@ -56,6 +61,7 @@ import {SessionService} from '../shared/services/session.service';
  * | `player`     | `jugador-competición` | `info` · `rating` · `links` · `competitions` · `edit` |
  * | `venue`      | estadio     | `edit` · `links`                             |
  * | `referee`    | árbitro     | `edit` · `matches` · `links`                 |
+ * | `tv-channel` | canal de TV | `new` · `edit` · `matches` · `links`         |
  * | `match`      | partido     | `events` · `scores`                          |
  * | `link`       | `tipo-id`   | `edit` (enlace con los proveedores)          |
  *
@@ -73,6 +79,7 @@ export class AppModalRegistry extends ModalStackRegistry {
   private readonly playerApi = inject(PlayerApiService);
   private readonly venueApi = inject(VenueApiService);
   private readonly refereeApi = inject(RefereeApiService);
+  private readonly tvChannelApi = inject(TvChannelApiService);
   private readonly matchApi = inject(MatchApiService);
 
   /** Con la sesión aún sin resolver no se descarta un modal que venga en la URL. */
@@ -228,6 +235,36 @@ export class AppModalRegistry extends ModalStackRegistry {
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: RefereeFormSectionComponent, requiresId: true},
           {key: 'matches', labelI18nKey: 'referee.matches', icon: 'calendar-days', component: RefereeMatchesSectionComponent, requiresId: true},
           {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: RefereeLinksSectionComponent, requiresId: true},
+        ],
+      },
+      'tv-channel': {
+        modalKey: 'tv-channel',
+        titleI18nKey: 'title.tv-channel',
+        icon: 'tv',
+        entityCrumb: {label: 'tv-channel'},
+        canAccess: isAdmin,
+        entity: {
+          load: (id: string) => this.tvChannelApi.get(Number(id)),
+          label: (channel: TvChannel) => channel.name,
+        },
+        sections: [
+          {
+            key: 'new',
+            labelI18nKey: 'tv-channel.add',
+            icon: 'plus',
+            component: TvChannelFormSectionComponent,
+            canAccess: (entry) => entry.id == null,
+          },
+          {
+            key: 'edit',
+            labelI18nKey: 'common.edit',
+            icon: 'pencil',
+            component: TvChannelFormSectionComponent,
+            canAccess: (entry) => entry.id != null,
+            requiresId: true,
+          },
+          {key: 'matches', labelI18nKey: 'tv-channel.matches', icon: 'calendar-days', component: TvChannelMatchesSectionComponent, requiresId: true},
+          {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: TvChannelLinksSectionComponent, requiresId: true},
         ],
       },
       match: {

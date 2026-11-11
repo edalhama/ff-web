@@ -19,6 +19,8 @@ export const ROUTE_TITLE = {
   venue: 'title.venue',
   referees: 'title.referees',
   referee: 'title.referee',
+  tvChannels: 'title.tv-channels',
+  tvChannel: 'title.tv-channel',
   cache: 'title.cache',
   tasks: 'title.tasks',
   links: 'title.links',

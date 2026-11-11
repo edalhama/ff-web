@@ -86,6 +86,7 @@ Lo reutilizable entre proyectos va a `edas-ng` / `edas-layout`; aquí solo vive 
 | `/admin/matches` | Partidos de una jornada de una competición (`?competition_id=&season_id=&round_id=` lo abre ya filtrado) | Admin |
 | `/admin/venues` | Listado de estadios | Admin |
 | `/admin/referees` | Listado de árbitros, con sus designaciones | Admin |
+| `/admin/tv-channels` | Canales de TV: listado, alta, ficha con logo (subido a mano), partidos y enlaces | Admin |
 | `/admin/links` | Enlaces con los proveedores | Admin |
 | `/admin/tasks` | Tareas programadas e incidencias | Admin |
 | `/admin/cache` | Caché de las páginas públicas | Admin |
@@ -180,18 +181,20 @@ El catálogo está en `core/app-modal-registry.ts`:
 | `team` | equipo | `edit` · `squad` |
 | `link` | `tipo-id` (`player-481`) | `edit` |
 | `match` | partido | `events` · `scores` |
+| `tv-channel` | canal de TV | `new` · `edit` · `matches` · `links` |
 
 Qué hay en cada ficha:
 
 - **Competición:** sus datos, sus temporadas y la **sincronización** (de qué proveedor llega cada dato, lanzarla ahora y las últimas ejecuciones con lo que hizo cada una). Si el proveedor la rechaza, el aviso muestra su mensaje tal cual.
 - **Temporada:** se abre por el **calendario** (una jornada cada vez, empezando por la que está en curso, con las horas en la zona horaria de quien mira), y tiene la **clasificación** (general, local y visitante, con las zonas marcadas por color) y los **equipos** inscritos. Todo esto es de solo lectura: llega por la sincronización.
-- **Partido:** la cabecera (equipos, resultado, estado, fecha y jornada) con la **cronología** de todos sus eventos, los del local a un lado y los del visitante al otro, y las **notas**: se elige un sistema de puntuación de la competición (de entrada, el suyo por defecto) y se ve cada jugador de los dos equipos con su papel, minutos, nota, puntos y distinciones. Se abre desde el listado de partidos, el calendario de una temporada y los partidos de un árbitro. De solo lectura.
+- **Partido:** la cabecera (equipos, resultado, estado, fecha, jornada y canales de TV) con la **cronología** de todos sus eventos, los del local a un lado y los del visitante al otro, y las **notas**: se elige un sistema de puntuación de la competición (de entrada, el suyo por defecto) y se ve cada jugador de los dos equipos con su papel, minutos, nota, puntos y distinciones. Se abre desde el listado de partidos, el calendario de una temporada y los partidos de un árbitro. De solo lectura.
 - **Jornadas y partidos** (`/admin/rounds`, `/admin/matches`, pantallas): siempre de una competición (LaLiga la primera vez). Los filtros de temporada y jornada arrancan en «Temporada actual» y «Jornada en curso», que no mandan nada y resuelve ff-api, así que lo guardado en el dispositivo nunca se queda en una jornada pasada. Sus opciones llegan con la primera página; al cambiar de competición o de temporada, los de dentro vuelven a «la vigente». Una jornada abre sus partidos.
 - **Caché de páginas** (`/admin/cache`, no es una ficha sino una pantalla): qué páginas públicas hay guardadas, si Cloudflare está enlazado, las últimas purgas, y purgar todo, una página o lo de una competición.
 - **Equipo:** sus textos y datos. No hay alta ni baja: los equipos los crea la sincronización. Sirve sobre todo para corregir los nombres, que los proveedores dan en inglés y sin tildes. La pestaña **Plantilla** enseña los jugadores de cada temporada en la que está inscrito (dorsal, posición, país, edad y estado), también de solo lectura.
 - **Enlace con el proveedor** (pestaña Sincronización de la competición): buscar la competición en el proveedor y enlazarla, cambiar o quitar el enlace, y un interruptor por cada tipo de dato que se trae.
 - **Tareas** (`/admin/tasks`, pantalla): si corre el programador (último latido de `sync:tick`), cada tarea de sincronización (una fuente de cada competición) con su estado, cadencia y próxima ejecución, con botón para lanzarla ahora o abrir la pestaña Sincronización de su competición; las incidencias abiertas (lo que ha fallado, avisado por email por ff-api) con botón para cerrarlas a mano, un correo de prueba para comprobar que el correo del entorno funciona, las últimas resueltas, y las últimas ejecuciones de todo el sistema.
 - **Enlaces** (`/admin/links`, pantalla): cuánto está enlazado con cada proveedor, las competiciones con su id y sus datos, y el listado de equipos, jugadores, estadios y competiciones (filtrable por los que no están enlazados). Cada uno abre el modal `link` para enlazarlo a mano con su id del proveedor.
+- **Canal de TV** (`/admin/tv-channels`, listado con alta): los crea la sincronización con el calendario (Jornada Perfecta da los de cada partido, solo con su nombre). En la ficha se corrigen el nombre (queda protegido; la sincronización lo sigue reconociendo por el de JP), la plataforma y el dial, y se sube el **logo** con el selector de imágenes de edas-ng (`ImagePickerComponent`): se guarda en el acto, sin esperar a Guardar, y ff-api lo sirve como el resto de imágenes. Pestañas con sus últimos partidos y sus enlaces. Solo se puede eliminar uno que no emite ningún partido. Los canales salen también en la cabecera del partido, en una columna del listado de partidos y en su tarjeta.
 - **Sincronización:** calendario y clasificación se esperan en pantalla; con las plantillas (minutos) la API la lanza en segundo plano y la pestaña consulta el estado cada 5 segundos hasta que termina, también si se abre con una ya en marcha.
 
 Cómo se comportan los formularios:
@@ -200,7 +203,7 @@ Cómo se comportan los formularios:
 - **En una edición solo se envía lo que cambia.** ff-api bloquea frente a la sincronización los campos que recibe modificados, así que mandar el formulario entero los bloquearía todos.
 - **Campos protegidos.** Los campos bloqueados se muestran al final de la ficha, con un interruptor para devolvérselos a la sincronización (`unlock_fields`).
 - **Errores de validación.** La API devuelve en `data.error` un mensaje por campo. `ServerErrors` (`shared/forms`) los pinta bajo cada control y, si el error está en otro idioma, cambia a su pestaña.
-- **Bajas.** Una competición con temporadas o una temporada con contenido no se pueden eliminar: la API responde `409` y el aviso explica el motivo.
+- **Bajas.** Una competición con temporadas, una temporada con contenido o un canal de TV que emite partidos no se pueden eliminar: la API responde `409` y el aviso explica el motivo.
 
 Para añadir otra entidad al panel: modelo en `shared/models`, servicio en `shared/services/api`, tarjeta y formulario en `components/<entidad>`, pantalla con `<edas-list>` en `screens/admin`, ruta en `routes.ts`, entrada en `app-navigation.ts` y su modal en el registro. `components/team` es el ejemplo más corto.
 

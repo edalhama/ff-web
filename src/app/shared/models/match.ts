@@ -1,5 +1,6 @@
 import {PlayerPosition} from './player';
 import {RefereeRole} from './referee';
+import {TvChannelSummary} from './tv-channel';
 import {SeasonStatus} from './season';
 import {TeamSummary, VenueSummary} from './team';
 
@@ -50,6 +51,8 @@ export interface FootballMatch {
   neutral_venue: boolean;
   /** Designación completa, un árbitro por rol; solo cuando se carga. */
   referees?: Array<{role: RefereeRole; id: number; name: string | null; short_name: string | null}>;
+  /** Canales que lo emiten, en el orden del proveedor (vacío si no se sabe); en el listado y la ficha del panel. */
+  tv_channels?: TvChannelSummary[];
   locked_fields: string[];
   venue?: VenueSummary | null;
 }

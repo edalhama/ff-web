@@ -67,6 +67,13 @@ import { SessionService } from '../../../shared/services/session.service';
           [interactive]="true"
           routerLink="/admin/referees"
         />
+        <edas-app-card
+          icon="tv"
+          [title]="'title.tv-channels' | translate"
+          [description]="'admin.tv-channels-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/tv-channels"
+        />
       </div>
 
       @if (session.user(); as user) {

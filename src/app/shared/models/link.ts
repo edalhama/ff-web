@@ -1,10 +1,10 @@
 import {SyncDataType} from './sync';
 
 /** Entidades de la pantalla de enlaces. */
-export type LinkableType = 'competition' | 'team' | 'player' | 'venue' | 'referee';
+export type LinkableType = 'competition' | 'team' | 'player' | 'venue' | 'referee' | 'tv_channel';
 
 /** Las que se enlazan a mano en esa pantalla; la competición, desde su ficha. */
-export const MANUAL_LINK_TYPES: readonly LinkableType[] = ['team', 'player', 'venue', 'referee'];
+export const MANUAL_LINK_TYPES: readonly LinkableType[] = ['team', 'player', 'venue', 'referee', 'tv_channel'];
 
 /** Resumen de la pantalla de enlaces (`/admin/links`). */
 export interface LinkSummary {

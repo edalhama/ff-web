@@ -16,7 +16,7 @@ import {LinkApiService} from '../../../shared/services/api/link-api.service';
 import {SeasonApiService} from '../../../shared/services/api/season-api.service';
 
 /** Tipos del listado, en el orden de su filtro. */
-const LIST_TYPES: readonly LinkableType[] = ['team', 'player', 'venue', 'referee', 'competition'];
+const LIST_TYPES: readonly LinkableType[] = ['team', 'player', 'venue', 'referee', 'tv_channel', 'competition'];
 
 /** Filtros del listado: qué tipo de entidad y si está enlazada. */
 const LINK_FILTERS: readonly ListFilter[] = [

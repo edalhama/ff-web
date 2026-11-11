@@ -9,6 +9,7 @@ import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.compone
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {MatchCardComponent} from '../../../components/match/match-card.component';
 import {MatchKickoffCellComponent, MatchScoreCellComponent, MatchStatusCellComponent, MatchTeamCellComponent} from '../../../components/match/match-cells.component';
+import {MatchTvChannelsCellComponent} from '../../../components/tv-channel/tv-channel-cells.component';
 import {contextFits, roundLabelKey} from '../../../shared/matches/matches';
 import {Competition, isDefaultCompetition} from '../../../shared/models/competition';
 import {MatchRow, Round, SeasonOption} from '../../../shared/models/match';
@@ -29,8 +30,11 @@ const MATCH_COLUMNS: readonly EdasListColumn<MatchRow>[] = [
   {key: 'score', label: 'match.result', cell: MatchScoreCellComponent},
   {key: 'away_team', label: 'match.away', cell: MatchTeamCellComponent, inputs: {side: 'away'}},
   {key: 'status', label: 'match.status', cell: MatchStatusCellComponent},
-  {key: 'venue', label: 'match.venue', value: (match) => match.venue?.name ?? '—', hideOn: 'mobile'},
+  {key: 'tv_channels', label: 'match.tv-channels', cell: MatchTvChannelsCellComponent, hideOn: 'mobile'},
 ];
+
+/** Partidos por página. */
+const MATCHES_PER_PAGE = 10;
 
 /**
  * Listado de partidos del panel, siempre de una competición y de una jornada, en tarjetas o en
@@ -140,7 +144,8 @@ export class MatchesScreenComponent implements OnInit {
     };
   });
 
-  protected readonly fetchMatches = (params: EdasListParams) => this.matchApi.list(params);
+  /** De 10 en 10 (no los 9 por defecto del servidor): una jornada suele tener 10 partidos. */
+  protected readonly fetchMatches = (params: EdasListParams) => this.matchApi.list({...params, perPage: MATCHES_PER_PAGE});
 
   public ngOnInit(): void {
     this.applyLinkedFilters();

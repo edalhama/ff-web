@@ -6,16 +6,17 @@ import {formatZoned, LONG_DAY_FORMAT, TIME_FORMAT} from '../../shared/dates/zone
 import {MATCH_STATUS_TONE, matchStatusLabel, roundLabelKey} from '../../shared/matches/matches';
 import {MatchDetail} from '../../shared/models/match';
 import {TeamCrestComponent} from '../team/team-crest.component';
+import {TvChannelListComponent} from '../tv-channel/tv-channel-list.component';
 
 /**
  * Cabecera de la ficha de un partido: los dos equipos con su escudo, el resultado (con el del
- * descanso y la tanda de penaltis, si los hay), el estado, la fecha con la hora de quien mira
- * y la jornada.
+ * descanso y la tanda de penaltis, si los hay), el estado, la fecha con la hora de quien mira,
+ * la jornada y los canales de TV que lo emiten.
  */
 @Component({
   selector: 'app-match-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BadgeComponent, TeamCrestComponent, TranslatePipe],
+  imports: [BadgeComponent, TeamCrestComponent, TranslatePipe, TvChannelListComponent],
   template: `
     @if (match(); as current) {
       <div class="ff-panel header">
@@ -49,6 +50,12 @@ import {TeamCrestComponent} from '../team/team-crest.component';
           <edas-badge [appearance]="tone()" [label]="statusLabel()" [labelTranslate]="false" size="s"/>
           <span>{{ kickoff() }}</span>
         </div>
+
+        @if (current.tv_channels?.length) {
+          <div class="tv" [attr.aria-label]="'match.tv-channels' | translate">
+            <app-tv-channel-list [channels]="current.tv_channels" [size]="20" align="center"/>
+          </div>
+        }
       </div>
     }
   `,
@@ -115,6 +122,11 @@ import {TeamCrestComponent} from '../team/team-crest.component';
     .separator {
       margin-inline: 0.35em;
       color: var(--edas-muted-text-color);
+    }
+
+    .tv {
+      width: 100%;
+      font-size: 0.875rem;
     }
 
     .meta {

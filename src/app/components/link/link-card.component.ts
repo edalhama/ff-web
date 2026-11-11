@@ -4,7 +4,7 @@ import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.co
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {LinkableType, LinkRow} from '../../shared/models/link';
 
-const ICONS: Record<LinkableType, string> = {competition: 'trophy', team: 'shield', player: 'user', venue: 'map-pin', referee: 'flag'};
+const ICONS: Record<LinkableType, string> = {competition: 'trophy', team: 'shield', player: 'user', venue: 'map-pin', referee: 'flag', tv_channel: 'tv'};
 
 /** Ficha de una entidad para enlazar: abre `link`, con la entidad codificada en el id del modal. */
 export function linkModalId(row: {type: LinkableType; id: number}): string {

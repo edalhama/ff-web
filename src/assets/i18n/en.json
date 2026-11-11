@@ -21,7 +21,9 @@
     "tasks": "Tasks",
     "rounds": "Matchdays",
     "matches": "Matches",
-    "match": "Match"
+    "match": "Match",
+    "tv-channels": "TV channels",
+    "tv-channel": "TV channel"
   },
   "auth": {
     "login-btn": "Sign in",
@@ -54,7 +56,8 @@
     "venues-description": "Capacity, surface and pitch size",
     "referees-description": "And their appointments",
     "rounds-description": "Fixtures and the matchday in play",
-    "matches-description": "Results, events and scores"
+    "matches-description": "Results, events and scores",
+    "tv-channels-description": "Logos, dials and the matches they show"
   },
   "common": {
     "status": "Status",
@@ -521,6 +524,38 @@
     "field-birth-place": "Birthplace",
     "field-country-id": "Country"
   },
+  "tv-channel": {
+    "name": "Name",
+    "name-hint": "As the provider calls it. If you change it, sync stops touching it and still recognises it.",
+    "platform": "Platform",
+    "platform-hint": "Operator or platform: Movistar Plus+, DAZN…",
+    "dial": "Dial",
+    "dial-hint": "Channel number on its operator.",
+    "matches": "Matches",
+    "matches-help": "It has shown {{count}} matches. The latest ones here.",
+    "no-matches-title": "No matches",
+    "no-matches": "It does not show any match yet. Each match's channels arrive with the fixtures, about 20 days before.",
+    "section-general": "General",
+    "add": "New channel",
+    "new-help": "Channels arrive on their own with each competition's fixtures. Add one by hand if it has not arrived yet: when it arrives with the same name, it will be this one. Once created you can upload its logo.",
+    "created": "Channel created.",
+    "updated": "Channel updated.",
+    "deleted": "Channel deleted.",
+    "delete": "Delete the channel",
+    "delete-confirm": "Only a channel that shows no match can be deleted. Its logo and links will be removed too.",
+    "image": "Logo",
+    "image-description": "Shown next to the matches it broadcasts.",
+    "no-image": "No logo. No provider gives it: upload it yourself (PNG, JPEG, WebP or GIF, up to 2 MB).",
+    "upload-image": "Upload logo",
+    "change-image": "Change logo",
+    "image-saved": "Logo saved.",
+    "image-removed": "Logo removed.",
+    "image-invalid-type": "The logo must be PNG, JPEG, WebP or GIF.",
+    "image-too-big": "The logo cannot be over 2 MB.",
+    "field-name": "Name",
+    "field-dial": "Dial",
+    "field-platform": "Platform"
+  },
   "match": {
     "calendar": "Fixtures",
     "round": "Matchday",
@@ -574,7 +609,8 @@
     "ideal": "Team of the week",
     "provisional": "Provisional",
     "captain": "Captain",
-    "captain-short": "C"
+    "captain-short": "C",
+    "tv-channels": "TV"
   },
   "standing": {
     "title": "Standings",
@@ -847,7 +883,8 @@
       "team": "Teams",
       "player": "Players",
       "venue": "Stadiums",
-      "referee": "Referees"
+      "referee": "Referees",
+      "tv_channel": "TV channels"
     },
     "missing": "{{count}} not linked with {{provider}}",
     "all-linked": "All linked with {{provider}}",
@@ -856,7 +893,7 @@
     "data": "Data brought",
     "last-sync": "Last sync",
     "no-competitions": "There are no competitions yet.",
-    "entities-title": "Teams, players, stadiums, referees and competitions",
+    "entities-title": "Teams, players, stadiums, referees, TV channels and competitions",
     "entities-help": "Filter by the ones not linked to review them. Open one to link it with its id at the provider.",
     "filter-type": "Type",
     "filter-status": "Link",

@@ -21,7 +21,9 @@
     "tasks": "Tareas",
     "rounds": "Jornadas",
     "matches": "Partidos",
-    "match": "Partido"
+    "match": "Partido",
+    "tv-channels": "Canales de TV",
+    "tv-channel": "Canal de TV"
   },
   "auth": {
     "login-btn": "Acceder",
@@ -54,7 +56,8 @@
     "venues-description": "Aforo, superficie y medidas",
     "referees-description": "Y sus designaciones",
     "rounds-description": "Calendario y jornada en curso",
-    "matches-description": "Resultados, eventos y notas"
+    "matches-description": "Resultados, eventos y notas",
+    "tv-channels-description": "Logos, diales y partidos que emiten"
   },
   "common": {
     "status": "Estado",
@@ -521,6 +524,38 @@
     "field-birth-place": "Lugar de nacimiento",
     "field-country-id": "País"
   },
+  "tv-channel": {
+    "name": "Nombre",
+    "name-hint": "Como lo llama el proveedor. Si lo cambias, la sincronización deja de tocarlo y lo sigue reconociendo.",
+    "platform": "Plataforma",
+    "platform-hint": "Operador o plataforma: Movistar Plus+, DAZN…",
+    "dial": "Dial",
+    "dial-hint": "Número del canal en su operador.",
+    "matches": "Partidos",
+    "matches-help": "Ha emitido {{count}} partidos. Aquí, los últimos.",
+    "no-matches-title": "Sin partidos",
+    "no-matches": "Todavía no emite ningún partido. Los canales de cada partido llegan con el calendario, unos 20 días antes.",
+    "section-general": "Datos generales",
+    "add": "Nuevo canal",
+    "new-help": "Los canales llegan solos con el calendario de cada competición. Da de alta uno a mano si aún no ha llegado: cuando llegue con el mismo nombre, será este. Al crearlo podrás subir su logo.",
+    "created": "Canal creado.",
+    "updated": "Canal actualizado.",
+    "deleted": "Canal eliminado.",
+    "delete": "Eliminar el canal",
+    "delete-confirm": "Solo se puede eliminar un canal que no emite ningún partido. Se quitarán también su logo y sus enlaces.",
+    "image": "Logo",
+    "image-description": "Se ve junto a los partidos que emite.",
+    "no-image": "Sin logo. Ningún proveedor lo da: súbelo tú (PNG, JPEG, WebP o GIF, hasta 2 MB).",
+    "upload-image": "Subir logo",
+    "change-image": "Cambiar logo",
+    "image-saved": "Logo guardado.",
+    "image-removed": "Logo quitado.",
+    "image-invalid-type": "El logo tiene que ser PNG, JPEG, WebP o GIF.",
+    "image-too-big": "El logo no puede pasar de 2 MB.",
+    "field-name": "Nombre",
+    "field-dial": "Dial",
+    "field-platform": "Plataforma"
+  },
   "match": {
     "calendar": "Calendario",
     "round": "Jornada",
@@ -574,7 +609,8 @@
     "ideal": "Once ideal",
     "provisional": "Provisional",
     "captain": "Capitán",
-    "captain-short": "C"
+    "captain-short": "C",
+    "tv-channels": "TV"
   },
   "standing": {
     "title": "Clasificación",
@@ -847,7 +883,8 @@
       "team": "Equipos",
       "player": "Jugadores",
       "venue": "Estadios",
-      "referee": "Árbitros"
+      "referee": "Árbitros",
+      "tv_channel": "Canales de TV"
     },
     "missing": "{{count}} sin enlazar con {{provider}}",
     "all-linked": "Todo enlazado con {{provider}}",
@@ -856,7 +893,7 @@
     "data": "Datos que se traen",
     "last-sync": "Última sincronización",
     "no-competitions": "Todavía no hay competiciones.",
-    "entities-title": "Equipos, jugadores, estadios, árbitros y competiciones",
+    "entities-title": "Equipos, jugadores, estadios, árbitros, canales de TV y competiciones",
     "entities-help": "Filtra por los que están sin enlazar para revisarlos. Al abrir uno puedes enlazarlo con su id en el proveedor.",
     "filter-type": "Tipo",
     "filter-status": "Enlace",
