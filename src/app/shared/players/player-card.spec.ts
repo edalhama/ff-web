@@ -12,6 +12,11 @@ function membership(id: number, competitionId: number, seasonId: number): Player
     status: 'unknown',
     status_note: null,
     status_until: null,
+    joined_on: null,
+    contract_until: null,
+    on_loan: false,
+    loan_from: null,
+    loan_until: null,
     active: true,
   };
 }

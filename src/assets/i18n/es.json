@@ -180,7 +180,15 @@
       "ratings": "Valoraciones del videojuego",
       "market": "Mercado",
       "automanager": "Valoración del automanager",
-      "profiles": "Fichas y valor de mercado"
+      "profiles": "Fichas y valor de mercado",
+      "history": "Historial de traspasos y de valor de mercado"
+    },
+    "transfer-type": {
+      "transfer": "Traspaso",
+      "free": "Libre",
+      "loan": "Cesión",
+      "loan_end": "Fin de cesión",
+      "internal": "Dentro del club"
     },
     "sync-status": {
       "success": "Correcta",
@@ -374,6 +382,9 @@
     "retired": "Retirado",
     "retired-description": "Ya no juega en ningún equipo",
     "status-until": "hasta",
+    "contract-until": "Contrato hasta",
+    "loan-from": "Cedido por",
+    "loan-until": "Cesión hasta",
     "no-squad-title": "Sin ficha en esta competición",
     "no-squad": "No está en ninguna plantilla de su temporada más reciente.",
     "no-other-competitions-title": "Solo en esta competición",

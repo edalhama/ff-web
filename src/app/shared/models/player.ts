@@ -5,6 +5,55 @@ import {TeamSummary} from './team';
 export type PlayerPosition = 'goalkeeper' | 'defender' | 'midfielder' | 'forward' | 'coach';
 export type PlayerStatus = 'ok' | 'injured' | 'suspended' | 'doubt' | 'not_called' | 'warned' | 'unknown';
 export type PlayerFoot = 'left' | 'right' | 'both';
+/** Tipo de un movimiento del historial de traspasos (Transfermarkt). */
+export type TransferType = 'transfer' | 'free' | 'loan' | 'loan_end' | 'internal';
+
+/** Un club de un historial o el propietario de un cedido: nuestro equipo si existe aquí y siempre su nombre en el proveedor. */
+export interface ClubRef {
+  team_id: number | null;
+  team: TeamSummary | null;
+  name: string | null;
+}
+
+/** Contrato y cesión de una ficha (Transfermarkt). */
+export interface SquadContract {
+  /** Alta en la plantilla (la de la cesión, si está cedido). `AAAA-MM-DD`. */
+  joined_on: string | null;
+  /** Fin del contrato; si está cedido, con el club propietario (lo trae el historial). */
+  contract_until: string | null;
+  on_loan: boolean;
+  /** Club propietario, solo si está cedido. */
+  loan_from: ClubRef | null;
+  loan_until: string | null;
+}
+
+/** Un movimiento del historial de traspasos, del más reciente al más antiguo. */
+export interface PlayerTransfer {
+  id: number;
+  date: string;
+  /** Temporada, por su año de inicio. */
+  season_year: number | null;
+  type: TransferType;
+  /** Aún no ha ocurrido: la vuelta de una cesión en curso. */
+  pending: boolean;
+  from: ClubRef;
+  to: ClubRef;
+  fee: number | null;
+  fee_currency: string | null;
+  /** Valor de mercado en ese momento, en euros. */
+  market_value: number | null;
+  /** Fin del contrato firmado; en una cesión, fin de la cesión. */
+  contract_until: string | null;
+}
+
+/** Un punto del historial del valor de mercado (Transfermarkt), del más antiguo al más reciente. */
+export interface PlayerValuePoint {
+  date: string;
+  /** Euros. */
+  value: number;
+  team: ClubRef;
+  age: number | null;
+}
 
 /** Valoración más reciente de un jugador en el videojuego (EA Sports FC). */
 export interface PlayerRating {
@@ -50,7 +99,7 @@ export interface Player {
 }
 
 /** Ficha de un jugador en la plantilla de un equipo para una temporada. */
-export interface SquadMember {
+export interface SquadMember extends SquadContract {
   id: number;
   player: Player;
   shirt_number: number | null;
@@ -100,7 +149,7 @@ export interface PlayerProfile {
 }
 
 /** Lo que dice una ficha de su temporada. */
-export interface PlayerMembershipState {
+export interface PlayerMembershipState extends SquadContract {
   shirt_number: number | null;
   /** La de la temporada; si la ficha no tiene una propia, la habitual del jugador. */
   position: PlayerPosition | null;
@@ -151,6 +200,10 @@ export interface PlayerDetail extends PlayerProfile {
   ratings: PlayerRatingDetail[];
   /** Valoración del automanager de Jornada Perfecta: la actual y la de sus últimos partidos. */
   automanager: PlayerAutomanager;
+  /** Historial de traspasos (Transfermarkt), del más reciente al más antiguo. */
+  transfers: PlayerTransfer[];
+  /** Historial del valor de mercado (Transfermarkt), del más antiguo al más reciente. */
+  value_history: PlayerValuePoint[];
 }
 
 /** Lo que carga el modal `player`: la ficha y la competición desde la que se abre. */

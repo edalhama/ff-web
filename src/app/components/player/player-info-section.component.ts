@@ -157,14 +157,26 @@ export class PlayerInfoSectionComponent {
   }
 
   protected membershipProperties(membership: PlayerMembership): EdasProperty[] {
-    return [
+    const date = (value: string | null | undefined) => (value ? this.datePipe.transform(value, 'd MMM y') : null);
+    const properties: EdasProperty[] = [
       {label: 'team.squad-number', value: membership.shirt_number},
       {
         label: 'team.squad-position',
         value: membership.position ? `enum.player-position.${membership.position}` : null,
         translateValue: !!membership.position,
       },
+      // Contrato y cesión (Transfermarkt); si está cedido, el contrato es con su club propietario
+      {label: 'player.contract-until', value: date(membership.contract_until)},
     ];
+
+    if (membership.on_loan) {
+      properties.push(
+        {label: 'player.loan-from', value: membership.loan_from?.team?.name ?? membership.loan_from?.name ?? null},
+        {label: 'player.loan-until', value: date(membership.loan_until)},
+      );
+    }
+
+    return properties;
   }
 
   protected tone(membership: PlayerMembership): 'success' | 'warning' | 'danger' | 'neutral' {

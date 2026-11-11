@@ -180,7 +180,15 @@
       "ratings": "Video game ratings",
       "market": "Market",
       "automanager": "Automanager rating",
-      "profiles": "Profiles and market value"
+      "profiles": "Profiles and market value",
+      "history": "Transfer and market value history"
+    },
+    "transfer-type": {
+      "transfer": "Transfer",
+      "free": "Free transfer",
+      "loan": "Loan",
+      "loan_end": "End of loan",
+      "internal": "Within the club"
     },
     "sync-status": {
       "success": "Succeeded",
@@ -374,6 +382,9 @@
     "retired": "Retired",
     "retired-description": "No longer plays for any team",
     "status-until": "until",
+    "contract-until": "Contract until",
+    "loan-from": "On loan from",
+    "loan-until": "Loan until",
     "no-squad-title": "Not in this competition",
     "no-squad": "Not in any squad of its latest season.",
     "no-other-competitions-title": "Only in this competition",
