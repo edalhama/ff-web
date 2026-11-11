@@ -12,6 +12,7 @@ export const ROUTE_TITLE = {
   team: 'title.team',
   players: 'title.players',
   player: 'title.player',
+  market: 'title.market',
   rounds: 'title.rounds',
   matches: 'title.matches',
   match: 'title.match',

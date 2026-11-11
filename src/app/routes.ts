@@ -64,6 +64,11 @@ export const routes: Routes = [
         data: { titleKey: ROUTE_TITLE.players, icon: 'users' },
       },
       {
+        path: 'market',
+        loadComponent: () => import('./screens/admin/market/market-screen.component').then((m) => m.MarketScreenComponent),
+        data: { titleKey: ROUTE_TITLE.market, icon: 'trending-up' },
+      },
+      {
         path: 'rounds',
         loadComponent: () => import('./screens/admin/rounds/rounds-screen.component').then((m) => m.RoundsScreenComponent),
         data: { titleKey: ROUTE_TITLE.rounds, icon: 'calendar-range' },

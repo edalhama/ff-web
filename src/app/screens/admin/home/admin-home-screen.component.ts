@@ -40,6 +40,13 @@ import { SessionService } from '../../../shared/services/session.service';
           routerLink="/admin/players"
         />
         <edas-app-card
+          icon="trending-up"
+          [title]="'title.market' | translate"
+          [description]="'admin.market-description' | translate"
+          [interactive]="true"
+          routerLink="/admin/market"
+        />
+        <edas-app-card
           icon="calendar-range"
           [title]="'title.rounds' | translate"
           [description]="'admin.rounds-description' | translate"

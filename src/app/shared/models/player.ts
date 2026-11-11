@@ -1,4 +1,5 @@
 import {Country} from './country';
+import {PlayerAutomanager} from './market';
 import {TeamSummary} from './team';
 
 export type PlayerPosition = 'goalkeeper' | 'defender' | 'midfielder' | 'forward' | 'coach';
@@ -148,6 +149,8 @@ export interface PlayerDetail extends PlayerProfile {
   memberships: PlayerMembership[];
   /** De la edición más reciente a la más antigua. */
   ratings: PlayerRatingDetail[];
+  /** Valoración del automanager de Jornada Perfecta: la actual y la de sus últimos partidos. */
+  automanager: PlayerAutomanager;
 }
 
 /** Lo que carga el modal `player`: la ficha y la competición desde la que se abre. */

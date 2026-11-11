@@ -29,7 +29,7 @@ export interface Task {
   incident_id: number | null;
 }
 
-export type IncidentKind = 'sync_failed' | 'sync_errors' | 'scheduler_stalled' | 'page_cache';
+export type IncidentKind = 'sync_failed' | 'sync_errors' | 'scheduler_stalled' | 'page_cache' | 'asset_sync' | 'market_lfm_stale';
 export type IncidentSeverity = 'warning' | 'error';
 export type IncidentStatus = 'open' | 'resolved';
 

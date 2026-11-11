@@ -6,19 +6,26 @@ import {EdasProperty, PropertyListComponent} from '@edas/ng/wrapper/components/p
 import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {PlayerCard} from '../../shared/models/player';
 import {CARD_STATS, cardStatKey, groupStats, ratingTier, stars} from '../../shared/players/rating';
+import {PlayerAutomanagerComponent} from './player-automanager.component';
 import {PlayerRatingBadgeComponent} from './player-rating-badge.component';
 
 /**
- * Valoración del jugador en el videojuego (sección `rating` del modal `player`): la carta de
- * la edición más reciente (media, posiciones, las seis medias, filigranas y pierna mala), sus
- * atributos detallados por grupo y, si hay más de una, las de ediciones anteriores.
+ * Valoración del jugador (sección `rating` del modal `player`). Arriba, la del automanager de
+ * Jornada Perfecta (la actual por sistema y la que traía a sus últimos partidos), si la tiene.
+ * Debajo, la del videojuego: la carta de la edición más reciente (media, posiciones, las seis
+ * medias, filigranas y pierna mala), sus atributos detallados por grupo y, si hay más de una,
+ * las de ediciones anteriores. Sin ninguna de las dos, un aviso.
  */
 @Component({
   selector: 'app-player-rating-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppCardComponent, ButtonComponent, LocalizedDatePipe, PlayerRatingBadgeComponent, PropertyListComponent, TranslatePipe],
+  imports: [AppCardComponent, ButtonComponent, LocalizedDatePipe, PlayerAutomanagerComponent, PlayerRatingBadgeComponent, PropertyListComponent, TranslatePipe],
   template: `
     @if (data(); as player) {
+      @if (hasAutomanager()) {
+        <app-player-automanager [automanager]="player.automanager"/>
+      }
+
       @if (player.ratings[0]; as rating) {
         <edas-app-card
           icon="gamepad-2"
@@ -89,7 +96,7 @@ import {PlayerRatingBadgeComponent} from './player-rating-badge.component';
             </table>
           </div>
         }
-      } @else {
+      } @else if (!hasAutomanager()) {
         <edas-app-card icon="gamepad-2" [iconSize]="48" [title]="'player.no-rating-title' | translate" [description]="'player.no-rating' | translate"/>
       }
     }
@@ -205,6 +212,13 @@ export class PlayerRatingSectionComponent {
   protected readonly cardStats = CARD_STATS;
 
   private readonly latest = computed(() => this.data()?.ratings[0] ?? null);
+
+  /** Tiene valoración del automanager, actual o de algún partido. */
+  protected readonly hasAutomanager = computed(() => {
+    const automanager = this.data()?.automanager;
+
+    return !!automanager && (automanager.current.length > 0 || automanager.matches.length > 0);
+  });
 
   /** «CM · CDM, CAM». */
   protected readonly positions = computed(() => {

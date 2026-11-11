@@ -1,4 +1,4 @@
-export type SyncDataType = 'calendar' | 'standings' | 'squads' | 'statuses' | 'lineups' | 'events' | 'stats' | 'scores' | 'ratings';
+export type SyncDataType = 'calendar' | 'standings' | 'squads' | 'statuses' | 'lineups' | 'events' | 'stats' | 'scores' | 'ratings' | 'market' | 'automanager';
 export type SyncStatus = 'running' | 'success' | 'partial' | 'failed';
 
 /** Qué proveedor alimenta un tipo de dato de la competición. */
