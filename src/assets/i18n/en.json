@@ -929,7 +929,7 @@
     "unlinked-description": "Not linked. It brings: {{types}}.",
     "search-help-ea-fc": "Search {{provider}} for the league by name or country («laliga», «spain»), or type its id (LaLiga is 53). Only the leagues in the game are there.",
     "search-help-jornada-perfecta": "Search {{provider}} for the competition by name, country («ES») or id (LaLiga is 1). Only the competitions active in Jornada Perfecta are there.",
-    "search-help-transfermarkt": "Search {{provider}} for the competition by name («laliga», «premier») or type its code (LaLiga is ES1; the Premier League, GB1).",
+    "search-help-transfermarkt": "Search {{provider}} for the competition by name («laliga», «premier») or type its code (LaLiga is ES1; Segunda, ES2; the Premier League, GB1). It can bring the whole competition (calendar, standings, squads and statuses) or just complete the profiles: data already brought by another provider stays with it, and each one is switched with its toggle.",
     "via": "via {{provider}}",
     "no-image": "This provider has no image",
     "assets-title": "Our copies of the images",
