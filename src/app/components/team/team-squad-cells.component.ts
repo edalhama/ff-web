@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 import {TranslatePipe} from '@ngx-translate/core';
+import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {SquadMember} from '../../shared/models/player';
 import {PlayerRatingBadgeComponent} from '../player/player-rating-badge.component';
 
@@ -70,5 +71,50 @@ export class SquadPositionCellComponent {
   `],
 })
 export class SquadRatingCellComponent {
+  public readonly data = input<SquadMember>();
+}
+
+/**
+ * Celda de contrato de la plantilla (Transfermarkt): hasta cuándo y, si está cedido, por quién
+ * y hasta cuándo dura la cesión. El contrato de un cedido es con su club propietario.
+ */
+@Component({
+  selector: 'app-squad-contract-cell',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [LocalizedDatePipe, TranslatePipe],
+  template: `
+    @if (data(); as member) {
+      @if (member.contract_until; as until) {
+        {{ until | localizedDate: 'MMM y' }}
+      } @else {
+        <span class="muted">—</span>
+      }
+      @if (member.on_loan) {
+        <span class="sub">
+          {{ 'player.loan-from' | translate }} {{ member.loan_from?.team?.name ?? member.loan_from?.name ?? '—' }}
+          @if (member.loan_until; as loanUntil) {
+            · {{ loanUntil | localizedDate: 'MMM y' }}
+          }
+        </span>
+      }
+    }
+  `,
+  styles: [`
+    :host {
+      white-space: nowrap;
+    }
+
+    .sub {
+      display: block;
+      font-size: 0.8125rem;
+      color: var(--edas-muted-text-color);
+    }
+
+    .muted {
+      color: var(--edas-muted-text-color);
+    }
+  `],
+})
+export class SquadContractCellComponent {
   public readonly data = input<SquadMember>();
 }

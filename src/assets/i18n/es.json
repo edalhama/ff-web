@@ -362,7 +362,8 @@
     "field-city": "Ciudad",
     "field-website": "Web",
     "field-twitter": "Twitter",
-    "open-venue": "Ver el estadio"
+    "open-venue": "Ver el estadio",
+    "squad-value": "valor {{value}}"
   },
   "player": {
     "info": "Información",
@@ -488,7 +489,26 @@
       "gk-physical": "COL"
     },
     "names-from-providers": "Nombre en cada proveedor:",
-    "use-this-name": "Usar este nombre"
+    "use-this-name": "Usar este nombre",
+    "market-value": "Valor de mercado",
+    "contract": "Contrato",
+    "joined-on": "En el club desde",
+    "detailed-position": "Posición detallada",
+    "open-transfermarkt": "Ver en Transfermarkt",
+    "career": "Trayectoria",
+    "value-history": "Valor de mercado",
+    "value-peak": "máximo {{value}}",
+    "value-table": "Ver como tabla",
+    "transfers": "Traspasos",
+    "transfer-date": "Fecha",
+    "transfer-move": "Movimiento",
+    "transfer-type": "Tipo",
+    "transfer-fee": "Importe",
+    "transfer-pending": "Pendiente",
+    "career-source": "Datos de Transfermarkt.",
+    "no-career-title": "Sin trayectoria",
+    "no-career": "Los historiales de Transfermarkt se cargan poco a poco, unos pocos jugadores cada vez: puede tardar unos días.",
+    "value-short": "Valor"
   },
   "market": {
     "provider": "Juego",

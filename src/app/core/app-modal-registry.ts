@@ -14,6 +14,7 @@ import {MatchScoresSectionComponent} from '../components/match/match-scores-sect
 import {PlayerCompetitionsSectionComponent} from '../components/player/player-competitions-section.component';
 import {PlayerFormSectionComponent} from '../components/player/player-form-section.component';
 import {PlayerInfoSectionComponent} from '../components/player/player-info-section.component';
+import {PlayerCareerSectionComponent} from '../components/player/player-career-section.component';
 import {PlayerLinksSectionComponent} from '../components/player/player-links-section.component';
 import {PlayerRatingSectionComponent} from '../components/player/player-rating-section.component';
 import {RefereeFormSectionComponent} from '../components/referee/referee-form-section.component';
@@ -201,6 +202,7 @@ export class AppModalRegistry extends ModalStackRegistry {
         sections: [
           {key: 'info', labelI18nKey: 'player.info', icon: 'user', component: PlayerInfoSectionComponent, requiresId: true},
           {key: 'rating', labelI18nKey: 'team.squad-rating', icon: 'gamepad-2', component: PlayerRatingSectionComponent, requiresId: true},
+          {key: 'career', labelI18nKey: 'player.career', icon: 'trending-up', component: PlayerCareerSectionComponent, requiresId: true},
           {key: 'links', labelI18nKey: 'title.links', icon: 'link', component: PlayerLinksSectionComponent, requiresId: true},
           {key: 'competitions', labelI18nKey: 'player.other-competitions', icon: 'trophy', component: PlayerCompetitionsSectionComponent, requiresId: true},
           {key: 'edit', labelI18nKey: 'common.edit', icon: 'pencil', component: PlayerFormSectionComponent, requiresId: true},

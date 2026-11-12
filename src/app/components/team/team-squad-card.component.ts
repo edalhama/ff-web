@@ -3,13 +3,14 @@ import {TranslateService} from '@ngx-translate/core';
 import {ModalStackService} from '@edas/ng/navigation/modal-stack/modal-stack.service';
 import {AppCardComponent, EdasAppCardStat} from '@edas/ng/wrapper/components/app-card/app-card.component';
 import {playerModalId, SquadMember} from '../../shared/models/player';
+import {formatMoney} from '../../shared/players/money';
 import {ageOn} from '../../shared/players/squad';
 import {PlayerStatusCellComponent} from '../player/player-cells.component';
 import {PlayerRatingBadgeComponent} from '../player/player-rating-badge.component';
 
 /**
  * Tarjeta de un jugador en la plantilla de un equipo: foto, nombre, dorsal, posición, país, edad,
- * valoración y estado. Los que han dejado el equipo salen atenuados. Toda la tarjeta abre la
+ * valor de mercado, valoración y estado. Los que han dejado el equipo salen atenuados. Toda la tarjeta abre la
  * ficha del jugador en la competición de la plantilla.
  */
 @Component({
@@ -80,8 +81,9 @@ export class TeamSquadCardComponent {
   protected readonly stats = computed<EdasAppCardStat[]>(() => {
     const member = this.data();
     // Lee el idioma activo (signal) para que las etiquetas cambien con él
-    this.translate.currentLang();
+    const lang = this.translate.currentLang();
     const age = ageOn(member?.player.birth_date, this.today);
+    const value = member?.player.market_value ?? null;
 
     return [
       {
@@ -91,6 +93,7 @@ export class TeamSquadCardComponent {
       },
       {label: this.translate.instant('team.squad-country'), value: member?.player.country?.name ?? '—', muted: !member?.player.country},
       {label: this.translate.instant('team.squad-age'), value: age != null ? String(age) : '—', muted: age == null},
+      {label: this.translate.instant('player.value-short'), value: formatMoney(value, lang), muted: value == null},
     ];
   });
 

@@ -5,6 +5,7 @@ import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component'
 import {EdasProperty, PropertyListComponent} from '@edas/ng/wrapper/components/property-list/property-list.component';
 import {LocalizedDatePipe} from '@edas/ng/wrapper/pipes/localized-date.pipe';
 import {PlayerCard, PlayerMembership} from '../../shared/models/player';
+import {formatMoney} from '../../shared/players/money';
 import {contextMemberships} from '../../shared/players/player-card';
 import {ageOn, playerStatusTone} from '../../shared/players/squad';
 import {PlayerRatingBadgeComponent} from './player-rating-badge.component';
@@ -31,6 +32,9 @@ import {PlayerRatingBadgeComponent} from './player-rating-badge.component';
           <edas-badge appearance="neutral" label="player.retired" size="s"/>
         }
         <edas-property-list [items]="personal()"/>
+        @if (player.transfermarkt?.profile_url; as url) {
+          <a class="external" [href]="url" target="_blank" rel="noopener noreferrer">{{ 'player.open-transfermarkt' | translate }}</a>
+        }
       </edas-app-card>
 
       @if (memberships(); as list) {
@@ -79,6 +83,10 @@ import {PlayerRatingBadgeComponent} from './player-rating-badge.component';
       object-fit: cover;
       border-radius: var(--edas-radius-md);
       background: rgba(var(--edas-tone-neutral-rgb), 0.14);
+    }
+
+    .external {
+      font-size: 0.8125rem;
     }
 
     .block-title {
@@ -133,11 +141,15 @@ export class PlayerInfoSectionComponent {
   protected readonly personal = computed<EdasProperty[]>(() => {
     const player = this.data();
     // Lee el idioma activo (signal) para que las etiquetas cambien con él
-    this.translate.currentLang();
+    const lang = this.translate.currentLang();
 
     if (!player) {
       return [];
     }
+
+    const date = (value: string | null) => (value ? this.datePipe.transform(value, 'd MMM y') : null);
+    const valueDate = date(player.market_value_updated_on);
+    const detailed = [player.transfermarkt?.position, ...(player.transfermarkt?.alt_positions ?? [])].filter(Boolean).join(' · ');
 
     const age = ageOn(player.birth_date, this.today);
     const birth = player.birth_date ? this.datePipe.transform(player.birth_date, 'd MMM y') : null;
@@ -148,6 +160,12 @@ export class PlayerInfoSectionComponent {
       {label: 'player.usual-position', value: player.position ? `enum.player-position.${player.position}` : null, translateValue: !!player.position},
       {label: 'player.foot', value: player.foot ? `enum.foot.${player.foot}` : null, translateValue: !!player.foot},
       {label: 'player.height', value: player.height_cm ? `${player.height_cm} cm` : null},
+      // Transfermarkt: la posición detallada (en inglés, como la da) y el valor de mercado real
+      {label: 'player.detailed-position', value: detailed || null},
+      {
+        label: 'player.market-value',
+        value: player.market_value != null ? formatMoney(player.market_value, lang) + (valueDate ? ` (${valueDate})` : '') : null,
+      },
     ];
   });
 
@@ -165,6 +183,7 @@ export class PlayerInfoSectionComponent {
         value: membership.position ? `enum.player-position.${membership.position}` : null,
         translateValue: !!membership.position,
       },
+      {label: 'player.joined-on', value: date(membership.joined_on)},
       // Contrato y cesión (Transfermarkt); si está cedido, el contrato es con su club propietario
       {label: 'player.contract-until', value: date(membership.contract_until)},
     ];

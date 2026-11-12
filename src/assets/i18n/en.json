@@ -362,7 +362,8 @@
     "field-city": "City",
     "field-website": "Website",
     "field-twitter": "Twitter",
-    "open-venue": "Open the stadium"
+    "open-venue": "Open the stadium",
+    "squad-value": "value {{value}}"
   },
   "player": {
     "info": "Overview",
@@ -488,7 +489,26 @@
       "gk-physical": "POS"
     },
     "names-from-providers": "Name in each provider:",
-    "use-this-name": "Use this name"
+    "use-this-name": "Use this name",
+    "market-value": "Market value",
+    "contract": "Contract",
+    "joined-on": "At the club since",
+    "detailed-position": "Detailed position",
+    "open-transfermarkt": "View on Transfermarkt",
+    "career": "Career",
+    "value-history": "Market value",
+    "value-peak": "peak {{value}}",
+    "value-table": "View as table",
+    "transfers": "Transfers",
+    "transfer-date": "Date",
+    "transfer-move": "Move",
+    "transfer-type": "Type",
+    "transfer-fee": "Fee",
+    "transfer-pending": "Pending",
+    "career-source": "Data from Transfermarkt.",
+    "no-career-title": "No career data",
+    "no-career": "Transfermarkt histories load gradually, a few players at a time: it may take a few days.",
+    "value-short": "Value"
   },
   "market": {
     "provider": "Game",

@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, input} from '@angular/core';
-import {TranslatePipe} from '@ngx-translate/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
+import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {BadgeComponent} from '@edas/ng/wrapper/components/badge/badge.component';
 import {Player, PlayerMembershipState, PlayerPosition} from '../../shared/models/player';
+import {formatMoney} from '../../shared/players/money';
 import {playerStatusTone} from '../../shared/players/squad';
 
 /** Celda de nombre de la tabla de jugadores: su cara, el deportivo y, debajo, el completo. */
@@ -110,4 +111,30 @@ export class PlayerStatusCellComponent {
   protected tone(member: PlayerMembershipState): 'success' | 'warning' | 'danger' | 'neutral' {
     return playerStatusTone(member.status);
   }
+}
+
+/** Celda del valor de mercado (Transfermarkt): compacto, en euros; `—` si no tiene. */
+@Component({
+  selector: 'app-player-value-cell',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {'[class.muted]': 'data()?.player?.market_value == null'},
+  template: `{{ text() }}`,
+  styles: [`
+    :host {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    :host(.muted) {
+      color: var(--edas-muted-text-color);
+    }
+  `],
+})
+export class PlayerValueCellComponent {
+  /** Una fila del listado de jugadores o de la plantilla de un equipo. */
+  public readonly data = input<{player: {market_value: number | null}}>();
+
+  private readonly translate = inject(TranslateService);
+
+  protected readonly text = computed(() => formatMoney(this.data()?.player.market_value, this.translate.currentLang()));
 }

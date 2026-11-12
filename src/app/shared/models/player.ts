@@ -93,6 +93,9 @@ export interface Player {
   /** Posición habitual. */
   position: PlayerPosition | null;
   country: Country | null;
+  /** Valor de mercado (Transfermarkt), en euros, y el día en que lo fijó. No es un precio fantasy. */
+  market_value: number | null;
+  market_value_updated_on: string | null;
   rating: PlayerRating | null;
   /** Cara según las fuentes preferidas de la competición de la plantilla. */
   photo: string | null;
@@ -139,6 +142,9 @@ export interface PlayerProfile {
   height_cm: number | null;
   foot: PlayerFoot | null;
   position: PlayerPosition | null;
+  /** Valor de mercado (Transfermarkt), en euros, y el día en que lo fijó. No es un precio fantasy. */
+  market_value: number | null;
+  market_value_updated_on: string | null;
   retired: boolean;
   /** Campos que la sincronización ya no toca. */
   locked_fields: string[];
@@ -200,6 +206,14 @@ export interface PlayerDetail extends PlayerProfile {
   ratings: PlayerRatingDetail[];
   /** Valoración del automanager de Jornada Perfecta: la actual y la de sus últimos partidos. */
   automanager: PlayerAutomanager;
+  /** Lo que Transfermarkt dice de él y no tiene columna; null si no está enlazado. */
+  transfermarkt: {
+    /** Posición detallada, en inglés: `Central Midfield`. */
+    position: string | null;
+    alt_positions: string[];
+    /** Su ficha allí. */
+    profile_url: string | null;
+  } | null;
   /** Historial de traspasos (Transfermarkt), del más reciente al más antiguo. */
   transfers: PlayerTransfer[];
   /** Historial del valor de mercado (Transfermarkt), del más antiguo al más reciente. */

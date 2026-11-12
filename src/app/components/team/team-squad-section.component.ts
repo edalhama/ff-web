@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {EdasListMemoryOptions} from '@edas/ng/components/layout/list/list-memory';
 import {EdasListColumn} from '@edas/ng/components/layout/list/list-view';
 import {ListComponent} from '@edas/ng/components/layout/list/list.component';
@@ -10,11 +10,12 @@ import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.compone
 import {EdasTabItem, TabsComponent} from '@edas/ng/wrapper/components/tabs/tabs.component';
 import {PlayerRating, playerModalId, SquadMember, TeamSquad} from '../../shared/models/player';
 import {Team} from '../../shared/models/team';
+import {formatMoney} from '../../shared/players/money';
 import {ageOn, POSITION_ORDER} from '../../shared/players/squad';
 import {TeamApiService} from '../../shared/services/api/team-api.service';
-import {PlayerNameCellComponent, PlayerStatusCellComponent} from '../player/player-cells.component';
+import {PlayerNameCellComponent, PlayerStatusCellComponent, PlayerValueCellComponent} from '../player/player-cells.component';
 import {TeamSquadCardComponent} from './team-squad-card.component';
-import {SquadPositionCellComponent, SquadRatingCellComponent} from './team-squad-cells.component';
+import {SquadContractCellComponent, SquadPositionCellComponent, SquadRatingCellComponent} from './team-squad-cells.component';
 
 const memberAge = (member: SquadMember): number | null => ageOn(member.player.birth_date, new Date());
 
@@ -26,6 +27,8 @@ const SQUAD_COLUMNS: readonly EdasListColumn<SquadMember>[] = [
   {key: 'rating', label: 'team.squad-rating', sortable: true, cell: SquadRatingCellComponent},
   {key: 'country', label: 'team.squad-country', sortable: true, value: (member) => member.player.country?.name},
   {key: 'age', label: 'team.squad-age', sortable: true, align: 'end', value: memberAge},
+  {key: 'market_value', label: 'player.market-value', sortable: true, align: 'end', cell: PlayerValueCellComponent},
+  {key: 'contract', label: 'player.contract', sortable: true, cell: SquadContractCellComponent},
   {key: 'status', label: 'team.squad-status', cell: PlayerStatusCellComponent},
 ];
 
@@ -39,13 +42,15 @@ const SQUAD_LIST_OPTIONS: EdasListMemoryOptions<SquadMember> = {
     rating: (member) => member.player.rating?.overall,
     country: (member) => member.player.country?.name,
     age: memberAge,
+    market_value: (member) => member.player.market_value,
+    contract: (member) => member.contract_until,
   },
 };
 
 /**
  * Plantilla de un equipo (sección `squad` del modal `team`): una pestaña por temporada en la
  * que está inscrito y, en cada una, la lista de jugadores en tarjetas o en tabla, con dorsal,
- * posición, valoración en el videojuego, país, edad y estado. Es de solo lectura: llega por la
+ * posición, valoración en el videojuego, país, edad, valor de mercado, contrato y estado. Es de solo lectura: llega por la
  * sincronización de plantillas y de valoraciones. Los que han dejado el equipo salen al final,
  * atenuados. Cada elemento abre la ficha del jugador en esa competición.
  */
@@ -64,6 +69,9 @@ const SQUAD_LIST_OPTIONS: EdasListMemoryOptions<SquadMember> = {
           <p class="note">
             {{ squad.competition.name }} · {{ squad.season.label }} ·
             {{ 'team.squad-count' | translate: {count: activeCount()} }}
+            @if (squadValue(); as total) {
+              · {{ 'team.squad-value' | translate: {value: total} }}
+            }
             @if (ratingSource(); as source) {
               · {{ 'team.squad-rating-source' | translate: {provider: source.provider.name, edition: source.edition} }}
             }
@@ -121,6 +129,7 @@ export class TeamSquadSectionComponent implements OnInit {
   public readonly data = input<Team>();
 
   private readonly teamApi = inject(TeamApiService);
+  private readonly translate = inject(TranslateService);
   private readonly stack = inject(ModalStackService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -141,6 +150,15 @@ export class TeamSquadSectionComponent implements OnInit {
       labelTranslate: false,
     })),
   );
+
+  /** Suma del valor de mercado de los que siguen en la plantilla; null si ninguno lo tiene. */
+  protected readonly squadValue = computed(() => {
+    const values = (this.selected()?.members ?? [])
+      .filter((member) => member.active && member.player.market_value != null)
+      .map((member) => member.player.market_value as number);
+
+    return values.length > 0 ? formatMoney(values.reduce((sum, value) => sum + value, 0), this.translate.currentLang()) : null;
+  });
 
   protected readonly activeCount = computed(() => this.selected()?.members.filter((member) => member.active).length ?? 0);
 

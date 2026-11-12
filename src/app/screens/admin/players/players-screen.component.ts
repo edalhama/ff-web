@@ -7,7 +7,7 @@ import {AppCardComponent} from '@edas/ng/wrapper/components/app-card/app-card.co
 import {LoaderComponent} from '@edas/ng/wrapper/components/loader/loader.component';
 import {TranslatePipe} from '@ngx-translate/core';
 import {PlayerCardComponent} from '../../../components/player/player-card.component';
-import {PlayerNameCellComponent, PlayerPositionCellComponent, PlayerStatusCellComponent} from '../../../components/player/player-cells.component';
+import {PlayerNameCellComponent, PlayerPositionCellComponent, PlayerStatusCellComponent, PlayerValueCellComponent} from '../../../components/player/player-cells.component';
 import {Competition, isDefaultCompetition} from '../../../shared/models/competition';
 import {PLAYER_LIST_STATUSES, PLAYER_POSITIONS, playerModalId, PlayerRow} from '../../../shared/models/player';
 import {CompetitionApiService} from '../../../shared/services/api/competition-api.service';
@@ -20,6 +20,7 @@ const PLAYER_COLUMNS: readonly EdasListColumn<PlayerRow>[] = [
   {key: 'position', label: 'team.squad-position', sortable: true, cell: PlayerPositionCellComponent},
   {key: 'country', label: 'team.squad-country', sortable: true, value: (row) => row.player.country?.name ?? '—', hideOn: 'mobile'},
   {key: 'birth_date', label: 'player.birth-date', sortable: true, format: 'date', value: (row) => row.player.birth_date, hideOn: 'mobile'},
+  {key: 'market_value', label: 'player.market-value', sortable: true, align: 'end', cell: PlayerValueCellComponent, hideOn: 'mobile'},
   {key: 'status', label: 'team.squad-status', sortable: true, cell: PlayerStatusCellComponent},
 ];
 
